@@ -103,3 +103,11 @@ export const ERROR_MESSAGES = {
   SERVER_ERROR: 'Erreur serveur',
   VALIDATION_ERROR: 'Données invalides'
 };
+
+export const TYPE_ICON_MAP = {
+  PERSONNALISEE: 'Sparkles',
+  SAISONNIERE: 'Leaf',
+  CRENEAU: 'Clock',
+  HABITUDES: 'TrendingUp',
+  ENGAGEMENT: 'TrendingUp',
+};

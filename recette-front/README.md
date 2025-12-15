@@ -1,16 +1,183 @@
-# React + Vite
+# RecetteApp - Application de Recettes avec IA
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Application web moderne de gestion de recettes avec recommandations personnalisées basées sur l'intelligence artificielle.
 
-Currently, two official plugins are available:
+## 🚀 Fonctionnalités
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Pour tous les utilisateurs
+- ✅ Parcourir et rechercher des recettes
+- ✅ Filtrer par difficulté, temps de préparation et note
+- ✅ Voir les détails complets des recettes
+- ✅ Consulter les commentaires et notes
 
-## React Compiler
+### Pour les utilisateurs connectés
+- ✅ Créer et gérer ses propres recettes
+- ✅ Ajouter des recettes aux favoris
+- ✅ Commenter et noter les recettes
+- ✅ Recevoir des recommandations personnalisées IA
+- ✅ Suivre son profil et ses statistiques
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Recommandations IA
+- 🤖 Recommandations personnalisées basées sur les préférences
+- 🍂 Recommandations saisonnières
+- ⏰ Recommandations par créneau horaire
+- 📊 Recommandations basées sur les habitudes
+- 🎯 Recommandations d'engagement
 
-## Expanding the ESLint configuration
+## 🛠️ Technologies
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Frontend**: React 18
+- **Routing**: React Router v6
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **HTTP Client**: Axios
+- **Date Handling**: date-fns
+
+## 📦 Installation
+
+### Prérequis
+- Node.js >= 14
+- npm ou yarn
+- Backend API en cours d'exécution sur `http://localhost:8080`
+
+### Installation des dépendances
+
+```bash
+npm install
+```
+
+### Configuration
+
+Créez un fichier `.env` à la racine du projet:
+
+```env
+REACT_APP_API_URL=http://localhost:8080/api
+```
+
+### Lancement en développement
+
+```bash
+npm start
+```
+
+L'application sera accessible sur `http://localhost:3000`
+
+### Build de production
+
+```bash
+npm run build
+```
+
+## 📁 Structure du projet
+
+```
+src/
+├── components/          # Composants réutilisables
+│   ├── common/         # Composants de base (Button, Input, Card...)
+│   ├── layout/         # Layout (Navbar, Footer)
+│   ├── auth/           # Authentification (Login, Register)
+│   ├── recipe/         # Composants recettes
+│   ├── comment/        # Composants commentaires
+│   ├── rating/         # Composants notation
+│   └── recommendation/ # Composants recommandations
+├── pages/              # Pages de l'application
+├── services/           # Services API
+├── context/            # Context React (Auth)
+├── utils/              # Utilitaires et helpers
+├── App.jsx             # Composant principal
+└── index.js            # Point d'entrée
+```
+
+## 🔌 API Endpoints utilisés
+
+### Authentification
+- `POST /v1/auth/login` - Connexion
+- `POST /v1/auth/register` - Inscription
+- `GET /v1/auth/me` - Utilisateur actuel
+
+### Recettes
+- `GET /v1/recettes/all` - Toutes les recettes
+- `GET /v1/recettes/{id}` - Détails d'une recette
+- `POST /v1/recettes/user/{userId}` - Créer une recette
+- `PUT /v1/recettes/{id}` - Modifier une recette
+- `DELETE /v1/recettes/{id}` - Supprimer une recette
+
+### Favoris
+- `GET /favoris/{userId}` - Favoris de l'utilisateur
+- `POST /favoris/{userId}/{recetteId}` - Ajouter aux favoris
+- `DELETE /favoris/{userId}/{recetteId}` - Retirer des favoris
+
+### Recommandations
+- `GET /v1/recommandations/user/{userId}` - Recommandations utilisateur
+- `POST /ai-recommendations/generate/personalized/{userId}` - Générer recommandation personnalisée
+- `POST /ai-recommendations/generate/seasonal/{userId}` - Générer recommandation saisonnière
+- `PUT /v1/recommandations/{id}/utilise` - Marquer comme utilisée
+
+### Commentaires & Notes
+- `POST /v1/recettes/{recetteId}/commentaires/user/{userId}` - Ajouter un commentaire
+- `POST /v1/recettes/{recetteId}/notes/user/{userId}` - Ajouter une note
+
+## 🎨 Personnalisation
+
+### Couleurs
+Les couleurs principales peuvent être modifiées dans `tailwind.config.js`:
+
+```javascript
+colors: {
+  orange: {
+    500: '#f97316', // Couleur principale
+    // ...
+  }
+}
+```
+
+### Logo & Branding
+Modifiez le logo dans les composants `Navbar` et `Footer`.
+
+## 🔐 Authentification
+
+L'application utilise JWT pour l'authentification:
+- Token stocké dans `localStorage`
+- Intercepteur Axios pour ajouter le token aux requêtes
+- Routes protégées avec composant `ProtectedRoute`
+
+## 📱 Responsive Design
+
+L'application est entièrement responsive avec des breakpoints:
+- Mobile: < 768px
+- Tablet: 768px - 1024px
+- Desktop: > 1024px
+
+## 🧪 Scripts disponibles
+
+```bash
+npm start          # Développement
+npm run build      # Production
+npm test           # Tests
+npm run eject      # Eject de Create React App
+```
+
+## 🐛 Dépannage
+
+### Erreur de connexion API
+Vérifiez que:
+1. Le backend est lancé sur `http://localhost:8080`
+2. Les CORS sont configurés côté backend
+3. L'URL de l'API est correcte dans `.env`
+
+### Problèmes d'authentification
+1. Vider le localStorage: `localStorage.clear()`
+2. Recharger la page
+3. Se reconnecter
+
+## 📄 Licence
+
+MIT
+
+## 👥 Contributeurs
+
+Votre équipe de développement
+
+## 📞 Support
+
+Pour toute question ou problème, contactez l'équipe de développement.
