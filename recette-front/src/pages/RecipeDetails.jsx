@@ -8,6 +8,7 @@ import RecipeDetail from '../components/recipe/RecipeDetail';
 import Loading from '../components/common/Loading';
 import Button from '../components/common/Button';
 import { generateSessionId } from '../utils/helpers';
+import ConfirmationModal from '../components/common/ConfirmationModal';
 
 const RecipeDetailsPage = () => {
   const { id } = useParams();
@@ -17,6 +18,8 @@ const RecipeDetailsPage = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sessionId] = useState(generateSessionId());
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false); 
+
 
   useEffect(() => {
     loadRecipe();
@@ -39,6 +42,9 @@ const RecipeDetailsPage = () => {
   };
 
   const checkFavorite = async () => {
+    if (!currentUser || !currentUser.id) {
+        return; 
+    }
     try {
       const favorites = await favoriteService.getUserFavorites(currentUser.id);
       setIsFavorite(favorites.some(f => f.recetteEntity?.id === parseInt(id)));
@@ -48,6 +54,9 @@ const RecipeDetailsPage = () => {
   };
 
   const recordInteraction = async () => {
+    if (!currentUser || !currentUser.id) {
+        return; 
+    }
     try {
       await recipeService.recordInteraction(
         currentUser.id,
@@ -94,6 +103,24 @@ const RecipeDetailsPage = () => {
       await loadRecipe();
     } catch (error) {
       console.error('Error adding comment:', error);
+    }
+  };
+
+  const handleDeleteRecipe = async () => {
+    if (!currentUser || currentUser.id !== recipe.userEntity.id) {
+        console.error("Accès non autorisé à la suppression.");
+        return;
+    }
+    
+    setLoading(true);
+    try {
+      await recipeService.deleteRecipe(id); 
+      alert("Recette supprimée avec succès !");
+      navigate('/recipes'); 
+    } catch (error) {
+      console.error('Error deleting recipe:', error);
+      setLoading(false); 
+      alert("Erreur lors de la suppression de la recette.");
     }
   };
 
@@ -158,7 +185,18 @@ const RecipeDetailsPage = () => {
           onToggleFavorite={handleToggleFavorite}
           onAddComment={handleAddComment}
           onAddRating={handleAddRating}
+          onDeleteRequest={() => setShowDeleteConfirm(true)}
         />
+        <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteRecipe}
+        title="Confirmation de Suppression"
+        message={`Êtes-vous sûr de vouloir supprimer la recette "${recipe?.titre}" ? Cette action est irréversible.`}
+        confirmText="Supprimer"
+        confirmVariant="danger"
+      />
+
       </div>
     </div>
   );

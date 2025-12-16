@@ -12,11 +12,36 @@ import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
 import ProfilePage from './pages/Profile';
 import NotFoundPage from './pages/NotFound';
+import AdminDashboard from './pages/AdminDashboard';
+import { AuthContext } from './context/AuthContext';
 
-// Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('auth_token');
   return token ? children : <Navigate to="/login" />;
+};
+
+const AdminProtectedRoute = ({ children }) => {
+  const { currentUser, loading } = React.useContext(AuthContext); 
+
+  if (loading) {
+    return <div className="text-center py-10">Vérification des droits...</div>; 
+  }
+
+  if (!currentUser) {
+    return <Navigate to="/login" />;
+  }
+
+  // Correction: Vérification plus flexible du rôle admin
+  const isAdmin = currentUser.role && 
+    (currentUser.role.toUpperCase() === 'ADMIN' || 
+     currentUser.role.toUpperCase() === 'ADMINISTRATEUR');
+
+  if (!isAdmin) {
+    console.log('Accès refusé - Rôle actuel:', currentUser.role);
+    return <Navigate to="/" />;
+  }
+
+  return children;
 };
 
 function App() {
@@ -59,7 +84,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
+              <Route
+                path="/admin"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminDashboard />
+                  </AdminProtectedRoute>
+                }
+              />
               {/* 404 */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

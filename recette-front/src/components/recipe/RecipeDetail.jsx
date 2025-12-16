@@ -1,5 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { Clock, Star, Heart, User, Calendar, MessageCircle } from 'lucide-react';
+import { useState, useContext } from 'react';
+import { Clock, Star, Heart, User, Calendar, MessageCircle, Trash2 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import Button from '../common/Button';
 import Card from '../common/Card';
@@ -7,11 +7,16 @@ import { formatCookingTime, formatDate, getDifficultyColor } from '../../utils/h
 import CommentList from '../comment/CommentList';
 import CommentForm from '../comment/CommentForm';
 import RatingForm from '../rating/RatingForm';
+import RecipeEdit from './RecipeEdit';
 
-const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAddRating }) => {
+
+
+const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAddRating, onReload, onDeleteRequest }) => {
   const { currentUser } = useContext(AuthContext);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [showRatingForm, setShowRatingForm] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  
 
   const totalTime = (recipe.tempsPreparation || 0) + (recipe.tempsCuisson || 0);
   const averageRating = recipe.moyenneNotes || 0;
@@ -28,6 +33,10 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
       onAddRating(ratingData);
       setShowRatingForm(false);
     }
+  };
+
+  const reloadRecipe = () => {
+    onReload?.();
   };
 
   return (
@@ -127,6 +136,23 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
                   <Star className="w-5 h-5 mr-2" />
                   Noter cette recette
                 </Button>
+
+                <Button
+                  variant="outline"
+                  fullWidth
+                  onClick={() => setEditOpen(true)}
+                >
+                  Modifier la recette
+                </Button>
+                  {editOpen && ( 
+                <RecipeEdit
+                  recipe={recipe}
+                  isOpen={editOpen}
+                  onClose={() => setEditOpen(false)}
+                  onUpdate={reloadRecipe}
+                />
+                  )}
+                
                 <Button
                   variant="outline"
                   fullWidth
@@ -135,6 +161,12 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
                   <MessageCircle className="w-5 h-5 mr-2" />
                   Ajouter un commentaire
                 </Button>
+                <Button 
+                variant="danger" 
+                onClick={onDeleteRequest} 
+              >
+                <Trash2 className="w-5 h-5" />
+              </Button>
               </div>
             )}
           </div>
@@ -203,6 +235,7 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
           </p>
         )}
       </Card>
+      
     </div>
   );
 };

@@ -5,18 +5,23 @@ import { favoriteService } from '../services/favoriteService';
 import RecipeList from '../components/recipe/RecipeList';
 import RecipeFilter from '../components/recipe/RecipeFilter';
 import { sortRecipes, filterRecipes } from '../utils/helpers';
+import RecipeCreate from '../components/recipe/RecipeCreate';
+import Button from '../components/common/Button';
+
 
 const Recipes = () => {
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, loading: authLoading } = useContext(AuthContext);
   const [recipes, setRecipes] = useState([]);
   const [filteredRecipes, setFilteredRecipes] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({});
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
 
   useEffect(() => {
     loadRecipes();
-    if (currentUser) {
+    if (currentUser && currentUser.id) {
       loadFavorites();
     }
   }, [currentUser]);
@@ -29,6 +34,26 @@ const Recipes = () => {
       setFilteredRecipes(data);
     } catch (error) {
       console.error('Error loading recipes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRecipeCreate = async (recipeData) => {
+    if (!currentUser || !currentUser.id) {
+      console.error("User not authenticated for creation.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await recipeService.createRecipe(currentUser.id, recipeData); 
+
+      await loadRecipes(); 
+      
+      setShowCreateModal(false);
+
+    } catch (error) {
+      console.error('Error creating recipe:', error);
     } finally {
       setLoading(false);
     }
@@ -96,6 +121,18 @@ const Recipes = () => {
             {filteredRecipes.length} recette{filteredRecipes.length > 1 ? 's' : ''} disponible{filteredRecipes.length > 1 ? 's' : ''}
           </p>
         </div>
+
+        <Button 
+        onClick={() => setShowCreateModal(true)}
+        disabled={authLoading}>
+          + Nouvelle recette
+        </Button>
+
+        <RecipeCreate
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onCreated={handleRecipeCreate}
+        />
 
         <div className="mb-8">
           <RecipeFilter onFilter={handleFilter} onSearch={handleSearch} />
