@@ -1,6 +1,6 @@
-import React, { useState, useContext } from 'react';
+import { BookOpen, ChefHat, Heart, Home, LogOut, Menu, TrendingUp, User, X } from 'lucide-react';
+import { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChefHat, Home, BookOpen, Heart, TrendingUp, User, LogOut, Menu, X, Search } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 
 const Navbar = () => {
@@ -20,7 +20,7 @@ const Navbar = () => {
     { name: 'Recettes', path: '/recipes', icon: BookOpen },
     ...(currentUser ? [
       { name: 'Favoris', path: '/favorites', icon: Heart },
-      { name: 'Recommandations', path: '/recommendations', icon: TrendingUp }
+      { name: 'Recommandations', path: '/recommendations/ai', icon: TrendingUp }
     ] : [])
   ];
 
@@ -32,7 +32,7 @@ const Navbar = () => {
           <Link to="/" className="flex items-center space-x-3">
             <ChefHat className="w-8 h-8 text-orange-500" />
             <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
-              RecetteApp
+              RecipeApp
             </span>
           </Link>
 

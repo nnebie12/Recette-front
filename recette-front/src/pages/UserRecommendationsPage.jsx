@@ -1,6 +1,4 @@
-// src/pages/UserRecommendationsPage.jsx
-
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { recommendationService } from '../services/recommendationService';
 import RecommendationList from '../components/recommendations/RecommendationList';
@@ -8,7 +6,6 @@ import Loading from '../components/common/Loading';
 import Button from '../components/common/Button';
 import { RefreshCw, Zap } from 'lucide-react';
 
-// Simuler les TYPES de recommandations pour le filtrage
 const TYPE_OPTIONS = [
   { key: 'ALL', label: 'Toutes les recommandations' },
   { key: 'PERSONNALISEE', label: 'Personnalisées' },
@@ -26,7 +23,6 @@ const UserRecommendationsPage = () => {
   const [selectedType, setSelectedType] = useState(TYPE_OPTIONS[0].key);
   const [markLoadingId, setMarkLoadingId] = useState(null);
 
-  // ID utilisateur (pour le service de recommandation)
   const userId = currentUser?.id; 
 
   const fetchRecommendations = async (type = selectedType) => {
@@ -37,11 +33,8 @@ const UserRecommendationsPage = () => {
     try {
       let data;
       if (type === 'ALL') {
-        // Appeler le service général pour toutes les recommandations de l'utilisateur
         data = await recommendationService.getUserRecommendations(userId);
       } else {
-        // Appeler le service pour un type spécifique (si vous avez un endpoint type)
-        // NOTE: Votre backend a getUserRecommendations et getRecommendationsByType.
         data = await recommendationService.getRecommendationsByType(userId, type);
       }
       setRecommendations(data);
@@ -73,7 +66,7 @@ const UserRecommendationsPage = () => {
     }
   };
   
-  // Charge initiale ou changement de type de filtre
+  // Charge initiale 
   useEffect(() => {
     if (userId) {
       fetchRecommendations(selectedType);

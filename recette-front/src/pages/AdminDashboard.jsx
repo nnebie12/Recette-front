@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { adminService } from '../services/adminService';
 import { useNavigate } from 'react-router-dom';
-import { Users, ChefHat, TrendingUp, BarChart3, Calendar, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import Loading from '../components/common/Loading';
 import UserManagementColumn from '../components/admin/UserManagementColumn';
 import RecipeManagementColumn from '../components/admin/RecipeManagementColumn';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Button from '../common/Button';
 import Input from '../common/Input';
 import Card from '../common/Card';
@@ -44,7 +44,6 @@ const AnalyticsPanel = ({ adminService }) => {
     setProfileUsers([]);
     try {
       if (selectedProfile === 'TOUS') {
-        // Optionnel : Vous pourriez appeler getAllUsers si nécessaire, ou ignorer
         setProfileUsers([]); 
         return; 
       }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Heart } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { favoriteService } from '../services/favoriteService';

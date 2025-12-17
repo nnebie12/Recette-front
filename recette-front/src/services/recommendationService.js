@@ -1,3 +1,5 @@
+// recette-front/src/services/recommendationService.js
+
 import { apiService } from './api';
 
 export const recommendationService = {
@@ -13,37 +15,50 @@ export const recommendationService = {
     return response.data;
   },
 
-  // Generate personalized recommendation
+  // Add a new recommendation (pour l'IA)
+  addRecommendation: async (userId, type, recommendations, score) => {
+    const response = await apiService.post('/v1/recommandations', {
+      userId,
+      type,
+      recommandation: recommendations,
+      score,
+      dateRecommandation: new Date().toISOString(),
+      estUtilise: false
+    });
+    return response.data;
+  },
+
+  // Generate personalized recommendation (backend)
   generatePersonalizedRecommendation: async (userId) => {
     const response = await apiService.post(`/ai-recommendations/generate/personalized/${userId}`);
     return response.data;
   },
 
-  // Generate seasonal recommendation
+  // Generate seasonal recommendation (backend)
   generateSeasonalRecommendation: async (userId) => {
     const response = await apiService.post(`/ai-recommendations/generate/seasonal/${userId}`);
     return response.data;
   },
 
-  // Generate timeslot recommendation
+  // Generate timeslot recommendation (backend)
   generateTimeslotRecommendation: async (userId) => {
     const response = await apiService.post(`/ai-recommendations/generate/timeslot/${userId}`);
     return response.data;
   },
 
-  // Generate habit-based recommendation
+  // Generate habit-based recommendation (backend)
   generateHabitBasedRecommendation: async (userId) => {
     const response = await apiService.post(`/ai-recommendations/generate/habit-based/${userId}`);
     return response.data;
   },
 
-  // Generate engagement recommendation
+  // Generate engagement recommendation (backend)
   generateEngagementRecommendation: async (userId) => {
     const response = await apiService.post(`/ai-recommendations/generate/engagement/${userId}`);
     return response.data;
   },
 
-  // Generate recommendation by type
+  // Generate recommendation by type (backend)
   generateRecommendationByType: async (userId, type) => {
     const response = await apiService.post(`/ai-recommendations/generate/${userId}`, null, {
       params: { type }

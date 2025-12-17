@@ -14,6 +14,13 @@ import ProfilePage from './pages/Profile';
 import NotFoundPage from './pages/NotFound';
 import AdminDashboard from './pages/AdminDashboard';
 import { AuthContext } from './context/AuthContext';
+import AIRecommendationsPage from './pages/AIRecommendationsPage';
+import TermsOfService from './components/legals/TermsOfService';
+import PrivacyPolicy from './components/legals/PrivacyPolicy';
+import LegalNotice from './components/legals/LegalNotice';
+import AboutUs from './components/about/AboutUs';
+import Team from './components/about/Team';
+import Contact from './components/about/Contact';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('auth_token');
@@ -59,6 +66,16 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
 
+              {/* Legal Routes */}
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/legal" element={<LegalNotice />} />
+
+              {/* About Routes */}
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/team" element={<Team />} />
+              <Route path="/contact" element={<Contact />} />
+
               {/* Protected Routes */}
               <Route
                 path="/favorites"
@@ -68,14 +85,20 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route
+              {/*<Route
                 path="/recommendations"
                 element={
                   <ProtectedRoute>
                     <Recommendations />
                   </ProtectedRoute>
                 }
-              />
+              />*/}
+              <Route 
+              path="/recommendations/ai" 
+              element={<AIRecommendationsPage 
+
+              />} />
+
               <Route
                 path="/profile"
                 element={

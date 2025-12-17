@@ -1,4 +1,4 @@
-# RecetteApp - Application de Recettes avec IA
+# RecipeApp - Application de Recettes avec IA
 
 Application web moderne de gestion de recettes avec recommandations personnalisées basées sur l'intelligence artificielle.
 

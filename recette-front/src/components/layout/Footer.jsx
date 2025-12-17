@@ -1,6 +1,5 @@
-import React from 'react';
+import { ChefHat, Facebook, Instagram, Mail, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { ChefHat, Facebook, Twitter, Instagram, Mail } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -31,7 +30,7 @@ const Footer = () => {
           <div className="col-span-1">
             <div className="flex items-center space-x-2 mb-4">
               <ChefHat className="w-8 h-8 text-orange-500" />
-              <span className="text-xl font-bold text-white">RecetteApp</span>
+              <span className="text-xl font-bold text-white">RecipeApp</span>
             </div>
             <p className="text-sm text-gray-400 mb-4">
               Découvrez et partagez vos recettes préférées avec notre communauté passionnée de cuisine.
@@ -75,7 +74,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">
           <p className="text-sm text-gray-400">
-            © {currentYear} RecetteApp. Tous droits réservés.
+            © {currentYear} RecipeApp. Tous droits réservés.
           </p>
         </div>
       </div>

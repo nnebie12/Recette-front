@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { ArrowRight, ChefHat, Clock, Star, TrendingUp } from 'lucide-react';
+import { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChefHat, TrendingUp, Clock, Star, ArrowRight } from 'lucide-react';
+import Button from '../components/common/Button';
+import Loading from '../components/common/Loading';
+import RecipeList from '../components/recipe/RecipeList';
 import { AuthContext } from '../context/AuthContext';
 import { recipeService } from '../services/recipeService';
-import Button from '../components/common/Button';
-import RecipeList from '../components/recipe/RecipeList';
-import Loading from '../components/common/Loading';
 
 const Home = () => {
   const { currentUser } = useContext(AuthContext);
@@ -41,7 +41,7 @@ const Home = () => {
               <ChefHat className="w-20 h-20" />
             </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6">
-              Bienvenue sur RecetteApp
+              Bienvenue sur RecipeApp
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-white/90">
               Découvrez, partagez et savourez des milliers de recettes
@@ -87,7 +87,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Pourquoi choisir RecetteApp ?
+              Pourquoi choisir RecipeApp ?
             </h2>
             <p className="text-gray-600">
               Une expérience culinaire unique avec des fonctionnalités innovantes

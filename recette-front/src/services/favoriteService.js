@@ -4,7 +4,8 @@ export const favoriteService = {
   // Get user favorites
   getUserFavorites: async (userId) => {
     const response = await apiService.get(`/favoris/${userId}`);
-    return response.data;
+    // Sécurité : s'assure que data est un tableau
+    return Array.isArray(response.data) ? response.data : [];
   },
 
   // Add recipe to favorites
@@ -20,16 +21,20 @@ export const favoriteService = {
 
   // Check if recipe is favorite
   isFavorite: async (userId, recetteId, favorites = null) => {
-    if (favorites) {
+    // Si des favoris sont passés en paramètre, on vérifie que c'est un tableau
+    if (favorites && Array.isArray(favorites)) {
       return favorites.some(fav => fav.recetteEntity?.id === recetteId);
     }
     
     try {
       const userFavorites = await favoriteService.getUserFavorites(userId);
-      return userFavorites.some(fav => fav.recetteEntity?.id === recetteId);
+      
+      // Sécurité supplémentaire ici aussi
+      const favoritesArray = Array.isArray(userFavorites) ? userFavorites : [];
+      return favoritesArray.some(fav => fav.recetteEntity?.id === recetteId);
     } catch (error) {
-    console.error('Error checking favorite:', error);
-    return false;
-  }
+      console.error('Error checking favorite:', error);
+      return false;
+    }
   }
 };
