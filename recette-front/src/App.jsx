@@ -21,6 +21,8 @@ import LegalNotice from './components/legals/LegalNotice';
 import AboutUs from './components/about/AboutUs';
 import Team from './components/about/Team';
 import Contact from './components/about/Contact';
+import RecipeCatalog from './pages/RecipeCatalog';
+import { useContext } from 'react';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('auth_token');
@@ -28,24 +30,26 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const AdminProtectedRoute = ({ children }) => {
-  const { currentUser, loading } = React.useContext(AuthContext); 
+  const { currentUser, loading } = useContext(AuthContext);
+  const token = localStorage.getItem('auth_token'); // Vérifiez le nom de votre clé (STORAGE_KEYS.TOKEN)
 
+  // 1. On attend que l'AuthContext ait fini de charger
   if (loading) {
-    return <div className="text-center py-10">Vérification des droits...</div>; 
+    return <div className="flex justify-center items-center h-screen">Chargement...</div>;
   }
 
-  if (!currentUser) {
-    return <Navigate to="/login" />;
+  // 2. Vérification du token physique
+  if (!token) {
+    return <Navigate to="/login" replace />;
   }
 
-  // Correction: Vérification plus flexible du rôle admin
-  const isAdmin = currentUser.role && 
-    (currentUser.role.toUpperCase() === 'ADMIN' || 
-     currentUser.role.toUpperCase() === 'ADMINISTRATEUR');
+  // 3. Vérification du rôle admin
+  const role = currentUser?.role?.toUpperCase() || "";
+  const isAdmin = role === 'ADMIN' || role === 'ADMINISTRATEUR';
 
-  if (!isAdmin) {
-    console.log('Accès refusé - Rôle actuel:', currentUser.role);
-    return <Navigate to="/" />;
+  if (!currentUser || !isAdmin) {
+    console.warn("Accès refusé : Profil non admin", role);
+    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -62,6 +66,7 @@ function App() {
               {/* Public Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/recipes" element={<Recipes />} />
+              <Route path="/catalog" element={<RecipeCatalog />} />
               <Route path="/recipes/:id" element={<RecipeDetailsPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />

@@ -1,7 +1,10 @@
+// recette-front/src/components/recipe/RecipeEdit.jsx - MISE À JOUR
+
 import React, { useState, useEffect } from 'react';
 import Modal from '../common/Modal';
 import Input from '../common/Input';
 import Button from '../common/Button';
+import ImageUpload from '../common/ImageUpload'; // 👈 IMPORT
 import { DIFFICULTY_LEVELS } from '../../utils/constants';
 
 const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
@@ -12,6 +15,8 @@ const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
     tempsCuisson: '',
     difficulte: 'MOYEN',
     ingredients: [{ ingredientName: '', quantite: '' }],
+    imageFile: null, 
+    imageUrl: null, 
   });
   const [loading, setLoading] = useState(false);
 
@@ -27,6 +32,8 @@ const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
           recipe.ingredients && recipe.ingredients.length > 0
             ? recipe.ingredients.map((i) => ({ ingredientName: i.ingredientName, quantite: i.quantite }))
             : [{ ingredientName: '', quantite: '' }],
+        imageFile: null,
+        imageUrl: recipe.imageUrl || null,
       });
     }
   }, [recipe, isOpen]);
@@ -39,6 +46,15 @@ const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
     } else {
       setForm({ ...form, [e.target.name]: e.target.value });
     }
+  };
+
+  // 👇 NOUVEAU: Handler pour l'image
+  const handleImageChange = (file, preview) => {
+    setForm({ 
+      ...form, 
+      imageFile: file,
+      imageUrl: preview 
+    });
   };
 
   const addIngredient = () => {
@@ -54,7 +70,17 @@ const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await onUpdate(form);
+      const recipeData = {
+        titre: form.titre,
+        description: form.description,
+        tempsPreparation: form.tempsPreparation,
+        tempsCuisson: form.tempsCuisson,
+        difficulte: form.difficulte,
+        ingredients: form.ingredients,
+        imageUrl: form.imageUrl, 
+      };
+
+      await onUpdate(recipeData);
       onClose();
     } catch (error) {
       console.error(error);
@@ -66,6 +92,14 @@ const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Modifier la recette" size="lg">
       <form className="space-y-4" onSubmit={handleSubmit}>
+        {/* Composant d'upload d'image */}
+        <ImageUpload
+          currentImage={form.imageUrl}
+          onImageChange={handleImageChange}
+          label="Image de la recette"
+          maxSize={5}
+        />
+
         <Input
           label="Titre"
           name="titre"
@@ -73,6 +107,7 @@ const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
           onChange={handleChange}
           required
         />
+        
         <Input
           label="Description"
           name="description"
@@ -80,6 +115,7 @@ const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
           value={form.description}
           onChange={handleChange}
         />
+        
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="Temps de préparation (min)"
@@ -96,6 +132,7 @@ const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
             onChange={handleChange}
           />
         </div>
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Difficulté</label>
           <select
@@ -105,9 +142,9 @@ const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
           >
             {Object.keys(DIFFICULTY_LEVELS).map((key) => (
-            <option key={key} value={key}>
-            {DIFFICULTY_LEVELS[key].label}
-            </option>
+              <option key={key} value={key}>
+                {DIFFICULTY_LEVELS[key].label}
+              </option>
             ))}
           </select>
         </div>
@@ -142,7 +179,10 @@ const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
           </Button>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end space-x-3 pt-4 border-t">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Annuler
+          </Button>
           <Button type="submit" variant="primary" loading={loading}>
             Enregistrer les modifications
           </Button>

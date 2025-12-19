@@ -1,6 +1,22 @@
 import { apiService } from './api';
 
 export const recipeService = {
+  uploadRecipeImage: async (recipeId, file) => {
+    const formData = new FormData();
+    formData.append('file', file); 
+
+    const response = await apiService.post(
+      `/v1/recettes/${recipeId}/upload-image`, 
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  },
+
   // Get all recipes
   getAllRecipes: async () => {
     const response = await apiService.get('/v1/recettes/all');
