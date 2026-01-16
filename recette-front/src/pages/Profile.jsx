@@ -8,6 +8,7 @@ import Card from '../components/common/Card';
 import RecipeList from '../components/recipe/RecipeList';
 import Loading from '../components/common/Loading';
 import { getProfileColor } from '../utils/helpers';
+import SearchHistoryPage from './SearchHistoryPage';
 
 const ProfilePage = () => {
   const { currentUser } = useContext(AuthContext);
@@ -164,8 +165,28 @@ const ProfilePage = () => {
             emptyMessage="Vous n'avez pas encore de recettes favorites"
           />
         )}
-      </div>
+
+        {activeTab === 'activity' && (
+          <SearchHistoryPage 
+            userId={currentUser.id}
+            recipes={userRecipes}
+            activity={userBehavior}
+            emptyMessage="Aucune activité récente"
+          />
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white p-4 rounded-lg shadow">
+            <h3 className="font-bold mb-3">Dernières recherches</h3>
+            {/* Liste simplifiée de searchHistoryService */}
+          </div>
     </div>
+    <div className="bg-white p-4 rounded-lg shadow">
+      <h3 className="font-bold mb-3">Récemment consultées</h3>
+      {/* Liste simplifiée de interactionService (type CLIC) */}
+    </div>
+  </div>
+      </div>
   );
 };
 

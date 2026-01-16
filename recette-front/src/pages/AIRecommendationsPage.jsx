@@ -47,11 +47,6 @@ const AIRecommendationsPage = () => {
 
   const loadUserBehavior = async () => {
     try {
-      // Charger le comportement utilisateur depuis votre API
-      // const behavior = await comportementService.getUserBehavior(currentUser.id);
-      // setUserBehavior(behavior);
-      
-      // Pour l'exemple, données simulées
       setUserBehavior({
         profil: 'ACTIF',
         scoreEngagement: 75,

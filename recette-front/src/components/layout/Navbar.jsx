@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChefHat, Home, BookOpen, Heart, TrendingUp, User, LogOut, Menu, X, List } from 'lucide-react';
+import { ChefHat, Home, BookOpen, Heart, TrendingUp, User, LogOut, Menu, X, List, Clock } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 
 const Navbar = () => {
@@ -18,10 +18,11 @@ const Navbar = () => {
   const navItems = [
     { name: 'Accueil', path: '/', icon: Home },
     { name: 'Recettes', path: '/recipes', icon: BookOpen },
-    { name: 'Catalogue', path: '/catalog', icon: List }, // 👈 NOUVEAU
+    { name: 'Catalogue', path: '/catalog', icon: List }, 
     ...(currentUser ? [
       { name: 'Favoris', path: '/favorites', icon: Heart },
-      { name: 'Recommandations', path: '/recommendations', icon: TrendingUp }
+      { name: 'Recommandations', path: '/recommendations', icon: TrendingUp },
+      { name: 'Historique', path: '/search-history', icon: Clock }
     ] : [])
   ];
 

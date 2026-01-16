@@ -9,6 +9,16 @@ export const recommendationService = {
     return response.data;
   },
 
+  generateAllRecommendations: async (userId) => {
+    const response = await apiService.post(`/recommandations/user/${userId}/generer-toutes`);
+    return response.data;
+  },
+
+  generatePersonalized: async (userId) => {
+    const response = await apiService.post(`/recommandations/user/${userId}/generer-personnalisee`);
+    return response.data;
+  },
+
   // Get recommendations by type
   getRecommendationsByType: async (userId, type) => {
     const response = await apiService.get(`/v1/recommandations/user/${userId}/type/${type}`);

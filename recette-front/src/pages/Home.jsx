@@ -6,6 +6,7 @@ import Loading from '../components/common/Loading';
 import RecipeList from '../components/recipe/RecipeList';
 import { AuthContext } from '../context/AuthContext';
 import { recipeService } from '../services/recipeService';
+import RecipeCatalog from './RecipeCatalog';
 
 const Home = () => {
   const { currentUser } = useContext(AuthContext);
@@ -55,7 +56,7 @@ const Home = () => {
                       <ArrowRight className="ml-2 w-5 h-5" />
                     </Button>
                   </Link>
-                  <Link to="/recommendations">
+                  <Link to="/recommendations/ai">
                     <Button variant="ghost" size="lg" className="text-white border-white hover:bg-white/10">
                       <TrendingUp className="mr-2 w-5 h-5" />
                       Mes recommandations

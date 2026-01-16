@@ -23,6 +23,7 @@ import Team from './components/about/Team';
 import Contact from './components/about/Contact';
 import RecipeCatalog from './pages/RecipeCatalog';
 import { useContext } from 'react';
+import SearchHistoryPage from './pages/SearchHistoryPage';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('auth_token');
@@ -31,7 +32,7 @@ const ProtectedRoute = ({ children }) => {
 
 const AdminProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useContext(AuthContext);
-  const token = localStorage.getItem('auth_token'); // Vérifiez le nom de votre clé (STORAGE_KEYS.TOKEN)
+  const token = localStorage.getItem('auth_token'); 
 
   // 1. On attend que l'AuthContext ait fini de charger
   if (loading) {
@@ -90,14 +91,25 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/*<Route
+
+              {/* Protected Routes */}
+              <Route
+                path="/search-history"
+                element={
+                  <ProtectedRoute>
+                    <SearchHistoryPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {<Route
                 path="/recommendations"
                 element={
                   <ProtectedRoute>
                     <Recommendations />
                   </ProtectedRoute>
                 }
-              />*/}
+              />}
               <Route 
               path="/recommendations/ai" 
               element={<AIRecommendationsPage 
