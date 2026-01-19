@@ -200,45 +200,7 @@ export const adminService = {
     }
   },
 
-  // ==================== RECOMMANDATIONS IA ====================
   
-  /**
-   * Génère une recommandation IA pour un utilisateur
-   */
-  triggerRecommendation: async (userId, type) => {
-    try {
-      const response = await apiService.post(
-        `/v1/ai-recommendations/generate/${userId}`,
-        null,
-        { params: { type: type.toUpperCase() } }
-      );
-      return parseJsonIfNeeded(response.data);
-    } catch (error) {
-      console.error('Erreur triggerRecommendation:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Génère une recommandation personnalisée
-   */
-  triggerPersonalizedRecommendation: async (userId) => {
-    try {
-      const response = await apiService.post(
-        `/v1/ai-recommendations/generate/personalized/${userId}`
-      );
-      return parseJsonIfNeeded(response.data);
-    } catch (error) {
-      console.error('Erreur triggerPersonalizedRecommendation:', error);
-      throw error;
-    }
-  },
-
-  // ==================== STATISTIQUES RFM ====================
-  
-  /**
-   * Récupère les statistiques RFM globales
-   */
   getRFMStats: async () => {
     try {
       const response = await apiService.get('/v1/comportement-utilisateur/stats/rfm');
@@ -247,6 +209,54 @@ export const adminService = {
       console.warn('Stats RFM non disponibles, retour de valeurs par défaut', error.message);
       return { champions: 0, fidele: 0, risque: 0, nouveau: 0 };
     }
+  },
+
+  // ==================== RECOMMENDATIONS MANAGEMENT ====================
+  
+  /**
+   * Récupère toutes les recommandations (admin)
+   */
+  getAllRecommendations: async () => {
+    const response = await apiService.get('/administrateur/recommandations');
+    return response.data;
+  },
+
+  /**
+   * Récupère les recommandations par utilisateur
+   */
+  getRecommendationsByUser: async (userId) => {
+    const response = await apiService.get(`/administrateur/recommandations/user/${userId}`);
+    return response.data;
+  },
+
+  /**
+   * Récupère les recommandations par type
+   */
+  getRecommendationsByType: async (type) => {
+    const response = await apiService.get(`/administrateur/recommandations/type/${type}`);
+    return response.data;
+  },
+
+  /**
+   * Récupère les statistiques des recommandations
+   */
+  getRecommendationStats: async () => {
+    const response = await apiService.get('/administrateur/recommandations/stats');
+    return response.data;
+  },
+
+  /**
+   * Supprime une recommandation
+   */
+  deleteRecommendation: async (recommendationId) => {
+    await apiService.delete(`/administrateur/recommandations/${recommendationId}`);
+  },
+
+  /**
+   * Supprime toutes les recommandations d'un utilisateur
+   */
+  deleteUserRecommendations: async (userId) => {
+    await apiService.delete(`/administrateur/recommandations/user/${userId}`);
   }
 };
 

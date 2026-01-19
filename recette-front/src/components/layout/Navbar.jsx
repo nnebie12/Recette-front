@@ -1,6 +1,6 @@
-import React, { useState, useContext } from 'react';
+import { BookOpen, ChefHat, ChevronDown, Clock, Heart, Home, LogOut, Menu, TrendingUp, User, X } from 'lucide-react';
+import { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChefHat, Home, BookOpen, Heart, TrendingUp, User, LogOut, Menu, X, List, Clock } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 
 const Navbar = () => {
@@ -8,23 +8,13 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [recipesMenuOpen, setRecipesMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/');
     setUserMenuOpen(false);
   };
-
-  const navItems = [
-    { name: 'Accueil', path: '/', icon: Home },
-    { name: 'Recettes', path: '/recipes', icon: BookOpen },
-    { name: 'Catalogue', path: '/catalog', icon: List }, 
-    ...(currentUser ? [
-      { name: 'Favoris', path: '/favorites', icon: Heart },
-      { name: 'Recommandations', path: '/recommendations', icon: TrendingUp },
-      { name: 'Historique', path: '/search-history', icon: Clock }
-    ] : [])
-  ];
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
@@ -40,16 +30,90 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors"
-              >
-                <item.icon className="w-5 h-5" />
-                <span>{item.name}</span>
-              </Link>
-            ))}
+            <Link to="/" className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors">
+              <Home className="w-5 h-5" />
+              <span>Accueil</span>
+            </Link>
+
+            {/* Menu déroulant Recettes */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setRecipesMenuOpen(true)}
+              onMouseLeave={() => setRecipesMenuOpen(false)}
+            >
+              <button className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors">
+                <BookOpen className="w-5 h-5" />
+                <span>Recettes</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+
+              {recipesMenuOpen && (
+                <div className="absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border border-gray-200">
+                  <Link
+                    to="/recipes"
+                    className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition"
+                  >
+                    📚 Toutes les recettes
+                  </Link>
+                  
+                  <div className="border-t my-2"></div>
+                  
+                  <div className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase">
+                    Par pays
+                  </div>
+                  <Link to="/recipes?cuisine=francaise" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                    🇫🇷 Française
+                  </Link>
+                  <Link to="/recipes?cuisine=italienne" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                    🇮🇹 Italienne
+                  </Link>
+                  <Link to="/recipes?cuisine=japonaise" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                    🇯🇵 Japonaise
+                  </Link>
+                  <Link to="/recipes?cuisine=mexicaine" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                    🇲🇽 Mexicaine
+                  </Link>
+                  
+                  <div className="border-t my-2"></div>
+                  
+                  <div className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase">
+                    Par type
+                  </div>
+                  <Link to="/recipes?type=entree" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                    🥗 Entrées
+                  </Link>
+                  <Link to="/recipes?type=plat" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                    🍽️ Plats
+                  </Link>
+                  <Link to="/recipes?type=dessert" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                    🍰 Desserts
+                  </Link>
+                  
+                  <div className="border-t my-2"></div>
+                  
+                  <Link to="/recipes?diet=vegetarien" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                    🌱 Végétarien
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {currentUser && (
+              <>
+                <Link to="/favorites" className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors">
+                  <Heart className="w-5 h-5" />
+                  <span>Favoris</span>
+                </Link>
+                <Link to="/recommendations" className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors">
+                  <TrendingUp className="w-5 h-5" />
+                  <span>Recommandations</span>
+                </Link>
+                <Link to="/search-history" className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors">
+                  <Clock className="w-5 h-5" />
+                  <span>Historique</span>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Desktop User Menu */}
@@ -64,9 +128,9 @@ const Navbar = () => {
                   <span className="text-sm font-medium text-gray-700">
                     {currentUser.prenom || currentUser.nom}
                   </span>
+                  <ChevronDown className="w-4 h-4 text-gray-700" />
                 </button>
 
-                {/* Dropdown Menu */}
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
                     <Link
@@ -89,16 +153,10 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Link
-                  to="/login"
-                  className="px-4 py-2 text-orange-500 hover:text-orange-600 font-medium"
-                >
+                <Link to="/login" className="px-4 py-2 text-orange-500 hover:text-orange-600 font-medium">
                   Connexion
                 </Link>
-                <Link
-                  to="/register"
-                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
-                >
+                <Link to="/register" className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium">
                   Inscription
                 </Link>
               </div>
@@ -110,11 +168,7 @@ const Navbar = () => {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden text-gray-700 hover:text-orange-500"
           >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
 
@@ -122,53 +176,46 @@ const Navbar = () => {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
             <div className="space-y-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span>{item.name}</span>
-                </Link>
-              ))}
+              <Link to="/" className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                <Home className="w-5 h-5" />
+                <span>Accueil</span>
+              </Link>
+              <Link to="/recipes" className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                <BookOpen className="w-5 h-5" />
+                <span>Recettes</span>
+              </Link>
 
-              {currentUser ? (
+              {currentUser && (
                 <>
-                  <Link
-                    to="/profile"
-                    className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+                  <Link to="/favorites" className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                    <Heart className="w-5 h-5" />
+                    <span>Favoris</span>
+                  </Link>
+                  <Link to="/recommendations" className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                    <TrendingUp className="w-5 h-5" />
+                    <span>Recommandations</span>
+                  </Link>
+                  <Link to="/search-history" className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                    <Clock className="w-5 h-5" />
+                    <span>Historique</span>
+                  </Link>
+                  <Link to="/profile" className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                     <User className="w-5 h-5" />
                     <span>Mon Profil</span>
                   </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                  >
+                  <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
                     <LogOut className="w-5 h-5" />
                     <span>Déconnexion</span>
                   </button>
                 </>
-              ) : (
+              )}
+
+              {!currentUser && (
                 <div className="px-4 py-2 space-y-2">
-                  <Link
-                    to="/login"
-                    className="block w-full text-center px-4 py-2 text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+                  <Link to="/login" className="block w-full text-center px-4 py-2 text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50" onClick={() => setMobileMenuOpen(false)}>
                     Connexion
                   </Link>
-                  <Link
-                    to="/register"
-                    className="block w-full text-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+                  <Link to="/register" className="block w-full text-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600" onClick={() => setMobileMenuOpen(false)}>
                     Inscription
                   </Link>
                 </div>

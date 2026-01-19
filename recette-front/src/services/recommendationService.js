@@ -1,88 +1,130 @@
-// recette-front/src/services/recommendationService.js
-
 import { apiService } from './api';
 
+
 export const recommendationService = {
-  // Get user recommendations
+  /**
+   * Récupère toutes les recommandations d'un utilisateur
+   */
   getUserRecommendations: async (userId) => {
     const response = await apiService.get(`/v1/recommandations/user/${userId}`);
     return response.data;
   },
 
-  generateAllRecommendations: async (userId) => {
-    const response = await apiService.post(`/recommandations/user/${userId}/generer-toutes`);
-    return response.data;
-  },
-
-  generatePersonalized: async (userId) => {
-    const response = await apiService.post(`/recommandations/user/${userId}/generer-personnalisee`);
-    return response.data;
-  },
-
-  // Get recommendations by type
+  /**
+   * Récupère les recommandations par type
+   */
   getRecommendationsByType: async (userId, type) => {
     const response = await apiService.get(`/v1/recommandations/user/${userId}/type/${type}`);
     return response.data;
   },
 
-  // Add a new recommendation (pour l'IA)
-  addRecommendation: async (userId, type, recommendations, score) => {
-    const response = await apiService.post('/v1/recommandations', {
-      userId,
-      type,
-      recommandation: recommendations,
-      score,
-      dateRecommandation: new Date().toISOString(),
-      estUtilise: false
-    });
-    return response.data;
-  },
-
-  // Generate personalized recommendation (backend)
+  /**
+   * Génère une recommandation personnalisée (IA automatique)
+   * L'IA analyse automatiquement le comportement et les préférences
+   */
   generatePersonalizedRecommendation: async (userId) => {
-    const response = await apiService.post(`/ai-recommendations/generate/personalized/${userId}`);
-    return response.data;
+    try {
+      const response = await apiService.post(`/ai/recommendations/personalized/${userId}`);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error("Erreur génération recommandation personnalisée:", error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
   },
 
-  // Generate seasonal recommendation (backend)
+  /**
+   * Génère une recommandation saisonnière (IA automatique)
+   */
   generateSeasonalRecommendation: async (userId) => {
-    const response = await apiService.post(`/ai-recommendations/generate/seasonal/${userId}`);
-    return response.data;
+    try {
+      const response = await apiService.post(`/ai/recommendations/seasonal/${userId}`);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error("Erreur génération recommandation saisonnière:", error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
   },
 
-  // Generate timeslot recommendation (backend)
-  generateTimeslotRecommendation: async (userId) => {
-    const response = await apiService.post(`/ai-recommendations/generate/timeslot/${userId}`);
-    return response.data;
-  },
-
-  // Generate habit-based recommendation (backend)
+  /**
+   * Génère une recommandation basée sur les habitudes (IA automatique)
+   */
   generateHabitBasedRecommendation: async (userId) => {
-    const response = await apiService.post(`/ai-recommendations/generate/habit-based/${userId}`);
-    return response.data;
+    try {
+      const response = await apiService.post(`/ai/recommendations/habit-based/${userId}`);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error("Erreur génération recommandation habitudes:", error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
   },
 
-  // Generate engagement recommendation (backend)
+  /**
+   * Génère une recommandation par créneau horaire (IA automatique)
+   */
+  generateTimeslotRecommendation: async (userId) => {
+    try {
+      const response = await apiService.post(`/ai/recommendations/timeslot/${userId}`);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error("Erreur génération recommandation créneau:", error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * Génère une recommandation d'engagement (IA automatique)
+   */
   generateEngagementRecommendation: async (userId) => {
-    const response = await apiService.post(`/ai-recommendations/generate/engagement/${userId}`);
+    try {
+      const response = await apiService.post(`/ai/recommendations/engagement/${userId}`);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error("Erreur génération recommandation engagement:", error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * Marque une recommandation comme utilisée
+   */
+  markRecommendationAsUsed: async (recommendationId) => {
+    const response = await apiService.put(`/v1/recommandations/${recommendationId}/utilise`);
     return response.data;
   },
 
-  // Generate recommendation by type (backend)
-  generateRecommendationByType: async (userId, type) => {
-    const response = await apiService.post(`/ai-recommendations/generate/${userId}`, null, {
-      params: { type }
-    });
-    return response.data;
-  },
-
-  // Mark recommendation as used
-  markRecommendationAsUsed: async (recommandationId) => {
-    const response = await apiService.put(`/v1/recommandations/${recommandationId}/utilise`);
-    return response.data;
-  },
-
-  // Delete user recommendations
+  /**
+   * Supprime toutes les recommandations d'un utilisateur
+   */
   deleteUserRecommendations: async (userId) => {
     await apiService.delete(`/v1/recommandations/user/${userId}`);
   }

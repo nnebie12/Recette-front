@@ -1,22 +1,23 @@
-// recette-front/src/components/recipe/RecipeCreate.jsx - MISE À JOUR
 
 import React, { useState } from 'react';
 import Modal from '../common/Modal';
 import Input from '../common/Input';
 import Button from '../common/Button';
-import ImageUpload from '../common/ImageUpload'; // 👈 IMPORT
+import ImageUpload from '../common/ImageUpload'; 
 import { DIFFICULTY_LEVELS } from '../../utils/constants';
 
 const RecipeCreate = ({ isOpen, onClose, onCreated }) => {
   const [form, setForm] = useState({
     titre: '',
-    description: '',
-    tempsPreparation: '',
-    tempsCuisson: '',
-    difficulte: 'MOYEN',
-    ingredients: [{ ingredientName: '', quantite: '' }],
-    imageFile: null, // 👈 NOUVEAU
-    imageUrl: null, // 👈 NOUVEAU
+  description: '',
+  cuisine: '',           
+  typeRecette: '',       
+  vegetarien: false,     
+  tempsPreparation: '',
+  tempsCuisson: '',
+  difficulte: 'FACILE',
+  ingredients: [{ ingredientName: '', quantite: '' }],
+  imageUrl: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +31,6 @@ const RecipeCreate = ({ isOpen, onClose, onCreated }) => {
     }
   };
 
-  // 👇 NOUVEAU: Handler pour l'image
   const handleImageChange = (file, preview) => {
     setForm({ 
       ...form, 
@@ -54,31 +54,32 @@ const RecipeCreate = ({ isOpen, onClose, onCreated }) => {
     try {
       const formData = new FormData();
     
-    // 2. On ajoute les champs texte
     formData.append('titre', form.titre);
     formData.append('description', form.description);
+    formData.append('cuisine', form.cuisine);
+    formData.append('typeRecette', form.typeRecette);
+    formData.append('vegetarien', form.vegetarien);
     formData.append('tempsPreparation', form.tempsPreparation);
     formData.append('tempsCuisson', form.tempsCuisson);
     formData.append('difficulte', form.difficulte);
     
-    // Pour les objets complexes comme les ingrédients, on les transforme en chaîne JSON
     formData.append('ingredients', JSON.stringify(form.ingredients));
 
-    // 3. On ajoute le fichier image s'il existe
     if (form.imageFile) {
-      formData.append('file', form.imageFile); // 'file' doit correspondre au @RequestParam du Back
+      formData.append('file', form.imageFile); 
     }
 
-    // 4. On appelle onCreated avec le formData au lieu de l'objet simple
     await onCreated(formData);
       
-      // Reset form
       setForm({
         titre: '',
         description: '',
+        cuisine: '',           
+        typeRecette: '',       
+        vegetarien: false, 
         tempsPreparation: '',
         tempsCuisson: '',
-        difficulte: 'MOYEN',
+        difficulte: 'FACILE',
         ingredients: [{ ingredientName: '', quantite: '' }],
         imageFile: null,
         imageUrl: null,
@@ -117,6 +118,31 @@ const RecipeCreate = ({ isOpen, onClose, onCreated }) => {
           value={form.description}
           onChange={handleChange}
         />
+
+        <select name="cuisine" value={form.cuisine} onChange={handleChange}>
+          <option value="">Sélectionnez une cuisine</option>
+          <option value="francaise">🇫🇷 Française</option>
+          <option value="italienne">🇮🇹 Italienne</option>
+          <option value="japonaise">🇯🇵 Japonaise</option>
+          <option value="mexicaine">🇲🇽 Mexicaine</option>
+        </select>
+
+        <select name="typeRecette" value={form.typeRecette} onChange={handleChange}>
+          <option value="">Type de plat</option>
+          <option value="entree">Entrée</option>
+          <option value="plat">Plat</option>
+          <option value="dessert">Dessert</option>
+        </select>
+
+        <label>
+          <input 
+            type="checkbox" 
+            name="vegetarien" 
+            checked={form.vegetarien}
+            onChange={(e) => setForm({...form, vegetarien: e.target.checked})}
+          />
+          Végétarien
+        </label>
         
         <div className="grid grid-cols-2 gap-4">
           <Input

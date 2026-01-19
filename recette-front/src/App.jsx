@@ -1,28 +1,25 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthProvider';
-import Navbar from './components/layout/Navbar';
-import Footer from './components/layout/Footer';
-import Home from './pages/Home';
-import Recipes from './pages/Recipes';
-import RecipeDetailsPage from './pages/RecipeDetails';
-import Favorites from './pages/Favorites';
-import Recommendations from './pages/Recommendations';
-import LoginPage from './pages/Login';
-import RegisterPage from './pages/Register';
-import ProfilePage from './pages/Profile';
-import NotFoundPage from './pages/NotFound';
-import AdminDashboard from './pages/AdminDashboard';
-import { AuthContext } from './context/AuthContext';
-import AIRecommendationsPage from './pages/AIRecommendationsPage';
-import TermsOfService from './components/legals/TermsOfService';
-import PrivacyPolicy from './components/legals/PrivacyPolicy';
-import LegalNotice from './components/legals/LegalNotice';
-import AboutUs from './components/about/AboutUs';
-import Team from './components/about/Team';
-import Contact from './components/about/Contact';
-import RecipeCatalog from './pages/RecipeCatalog';
 import { useContext } from 'react';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import AboutUs from './components/about/AboutUs';
+import Contact from './components/about/Contact';
+import Team from './components/about/Team';
+import Footer from './components/layout/Footer';
+import Navbar from './components/layout/Navbar';
+import LegalNotice from './components/legals/LegalNotice';
+import PrivacyPolicy from './components/legals/PrivacyPolicy';
+import TermsOfService from './components/legals/TermsOfService';
+import { AuthContext } from './context/AuthContext';
+import { AuthProvider } from './context/AuthProvider';
+import AdminDashboard from './pages/AdminDashboard';
+import Favorites from './pages/Favorites';
+import Home from './pages/Home';
+import LoginPage from './pages/Login';
+import NotFoundPage from './pages/NotFound';
+import ProfilePage from './pages/Profile';
+import RecipeDetailsPage from './pages/RecipeDetails';
+import Recipes from './pages/Recipes';
+import RecommendationsPage from './pages/recommendationsPage.jsx';
+import RegisterPage from './pages/Register';
 import SearchHistoryPage from './pages/SearchHistoryPage';
 
 const ProtectedRoute = ({ children }) => {
@@ -34,17 +31,17 @@ const AdminProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useContext(AuthContext);
   const token = localStorage.getItem('auth_token'); 
 
-  // 1. On attend que l'AuthContext ait fini de charger
+  // On attend que l'AuthContext ait fini de charger
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Chargement...</div>;
   }
 
-  // 2. Vérification du token physique
+  // Vérification du token physique
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  // 3. Vérification du rôle admin
+  // Vérification du rôle admin
   const role = currentUser?.role?.toUpperCase() || "";
   const isAdmin = role === 'ADMIN' || role === 'ADMINISTRATEUR';
 
@@ -67,7 +64,6 @@ function App() {
               {/* Public Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/recipes" element={<Recipes />} />
-              <Route path="/catalog" element={<RecipeCatalog />} />
               <Route path="/recipes/:id" element={<RecipeDetailsPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
@@ -92,7 +88,6 @@ function App() {
                 }
               />
 
-              {/* Protected Routes */}
               <Route
                 path="/search-history"
                 element={
@@ -102,19 +97,15 @@ function App() {
                 }
               />
 
-              {<Route
+              {/* UNE SEULE ROUTE pour les recommandations IA */}
+              <Route
                 path="/recommendations"
                 element={
                   <ProtectedRoute>
-                    <Recommendations />
+                    <RecommendationsPage />
                   </ProtectedRoute>
                 }
-              />}
-              <Route 
-              path="/recommendations/ai" 
-              element={<AIRecommendationsPage 
-
-              />} />
+              />
 
               <Route
                 path="/profile"
@@ -124,6 +115,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/admin"
                 element={
@@ -132,6 +124,7 @@ function App() {
                   </AdminProtectedRoute>
                 }
               />
+
               {/* 404 */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
