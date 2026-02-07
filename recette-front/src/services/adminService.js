@@ -213,12 +213,14 @@ export const adminService = {
 
   // ==================== RECOMMENDATIONS MANAGEMENT ====================
   
-  /**
-   * Récupère toutes les recommandations (admin)
-   */
   getAllRecommendations: async () => {
-    const response = await apiService.get('/administrateur/recommandations');
-    return response.data;
+    try {
+      const response = await apiService.get('/administrateur/recommandations/all'); 
+      return response.data;
+    } catch (error) {
+      console.error("Erreur service getAllRecommendations:", error);
+      throw error;
+    }
   },
 
   /**
