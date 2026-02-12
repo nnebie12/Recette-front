@@ -1,10 +1,10 @@
-import { useState, useEffect, useContext } from 'react';
-import { Brain, RefreshCw, Sparkles, Leaf, Clock, TrendingUp, Zap } from 'lucide-react';
-import { AuthContext } from '../context/AuthContext';
-import { useRecommendations } from '../hooks/useRecommendation';
-import RecommendationList from '../components/recommendation/RecommendationList';
+import { Brain, Clock, Leaf, RefreshCw, Sparkles, TrendingUp, Zap } from 'lucide-react';
+import { useContext, useEffect, useState } from 'react';
 import Button from '../components/common/Button';
 import Loading from '../components/common/Loading';
+import RecommendationList from '../components/recommendation/RecommendationList';
+import { AuthContext } from '../context/AuthContext';
+import { useRecommendations } from '../hooks/useRecommendation';
 
 const RECOMMENDATION_TYPES = [
   { key: 'PERSONNALISEE', label: 'Personnalisée', icon: Sparkles, color: 'orange' },
@@ -41,15 +41,19 @@ const RecommendationsPage = () => {
     }
   }, [currentUser?.id, loadRecommendations]);
 
-  // Chargement par type
   useEffect(() => {
-    if (currentUser?.id && activeTab !== 'ALL') {
-      loadRecommendationsByType(activeTab);
-    } else if (currentUser?.id) {
-      loadRecommendations();
-    }
-  }, [activeTab, currentUser?.id, loadRecommendations, loadRecommendationsByType]);
+  if (!currentUser?.id) return;
 
+  const fetchDatas = async () => {
+    if (activeTab === 'ALL') {
+      await loadRecommendations();
+    } else {
+      await loadRecommendationsByType(activeTab);
+    }
+  };
+
+  fetchDatas();
+}, [currentUser?.id, activeTab, loadRecommendations, loadRecommendationsByType]);
   const handleGenerateRecommendation = async (type) => {
     try {
       await generateRecommendation(type);

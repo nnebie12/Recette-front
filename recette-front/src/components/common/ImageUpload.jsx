@@ -1,13 +1,12 @@
-// recette-front/src/components/common/ImageUpload.jsx
-
 import React, { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, Loader } from 'lucide-react';
 import Button from './Button';
+import { useEffect } from 'react';
 
 const ImageUpload = ({ 
   currentImage = null, 
   onImageChange, 
-  maxSize = 5, // MB
+  maxSize = 5, 
   acceptedFormats = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'],
   label = "Image de la recette",
   preview = true,
@@ -18,46 +17,42 @@ const ImageUpload = ({
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleFileSelect = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  useEffect(() => {
+  setImagePreview(currentImage);
+}, [currentImage]);
 
-    setError(null);
+  const handleFileSelect = (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
 
-    // Validation du format
-    if (!acceptedFormats.includes(file.type)) {
-      setError(`Format non supporté. Formats acceptés: ${acceptedFormats.map(f => f.split('/')[1]).join(', ')}`);
-      return;
-    }
+  setError(null);
 
-    // Validation de la taille
-    const fileSizeMB = file.size / (1024 * 1024);
-    if (fileSizeMB > maxSize) {
-      setError(`La taille du fichier dépasse ${maxSize}MB. Taille actuelle: ${fileSizeMB.toFixed(2)}MB`);
-      return;
-    }
+  if (!acceptedFormats.includes(file.type)) {
+    setError(`Format non supporté`);
+    return;
+  }
 
-    setUploading(true);
+  if (file.size / (1024 * 1024) > maxSize) {
+    setError(`Image trop lourde (max ${maxSize}MB)`);
+    return;
+  }
 
-    try {
-      // Créer une preview locale
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setUploading(false);
-      };
-      reader.readAsDataURL(file);
+  setUploading(true);
 
-      // Callback avec le fichier et la preview
-      if (onImageChange) {
-        onImageChange(file, reader.result);
-      }
-    } catch (err) {
-      console.error('Erreur lors du chargement de l\'image:', err);
-      setError('Erreur lors du chargement de l\'image');
-      setUploading(false);
-    }
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const preview = reader.result;
+
+    setImagePreview(preview);
+    setUploading(false);
+
+    // ✅ ICI seulement
+    onImageChange?.(file, preview);
   };
+
+  reader.readAsDataURL(file);
+};
+
 
   const handleRemoveImage = () => {
     setImagePreview(null);

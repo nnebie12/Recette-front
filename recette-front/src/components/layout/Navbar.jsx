@@ -36,67 +36,67 @@ const Navbar = () => {
             </Link>
 
             {/* Menu déroulant Recettes */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setRecipesMenuOpen(true)}
-              onMouseLeave={() => setRecipesMenuOpen(false)}
-            >
-              <button className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors">
-                <BookOpen className="w-5 h-5" />
-                <span>Recettes</span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
+          <div className="relative" onMouseEnter={() => setRecipesMenuOpen(true)}>
+            <button className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors">
+              <BookOpen className="w-5 h-5" />
+              <span>Recettes</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
 
-              {recipesMenuOpen && (
-                <div className="absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border border-gray-200">
-                  <Link
-                    to="/recipes"
-                    className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition"
-                  >
-                    📚 Toutes les recettes
-                  </Link>
-                  
-                  <div className="border-t my-2"></div>
-                  
-                  <div className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase">
-                    Par pays
-                  </div>
-                  <Link to="/recipes?cuisine=francaise" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                    🇫🇷 Française
-                  </Link>
-                  <Link to="/recipes?cuisine=italienne" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                    🇮🇹 Italienne
-                  </Link>
-                  <Link to="/recipes?cuisine=japonaise" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                    🇯🇵 Japonaise
-                  </Link>
-                  <Link to="/recipes?cuisine=mexicaine" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                    🇲🇽 Mexicaine
-                  </Link>
-                  
-                  <div className="border-t my-2"></div>
-                  
-                  <div className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase">
-                    Par type
-                  </div>
-                  <Link to="/recipes?type=entree" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                    🥗 Entrées
-                  </Link>
-                  <Link to="/recipes?type=plat" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                    🍽️ Plats
-                  </Link>
-                  <Link to="/recipes?type=dessert" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                    🍰 Desserts
-                  </Link>
-                  
-                  <div className="border-t my-2"></div>
-                  
-                  <Link to="/recipes?diet=vegetarien" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
-                    🌱 Végétarien
-                  </Link>
+            {recipesMenuOpen && (
+              <div
+                className="absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border border-gray-200"
+                onMouseLeave={() => setRecipesMenuOpen(false)} // <-- fermer uniquement quand la souris quitte le menu
+              >
+                <Link
+                  to="/recipes"
+                  className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition"
+                >
+                  📚 Toutes les recettes
+                </Link>
+
+                <div className="border-t my-2"></div>
+
+                <div className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase">
+                  Par pays
                 </div>
-              )}
-            </div>
+                <Link to="/recipes?cuisine=francaise" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                  🇫🇷 Française
+                </Link>
+                <Link to="/recipes?cuisine=italienne" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                  🇮🇹 Italienne
+                </Link>
+                <Link to="/recipes?cuisine=japonaise" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                  🇯🇵 Japonaise
+                </Link>
+                <Link to="/recipes?cuisine=mexicaine" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                  🇲🇽 Mexicaine
+                </Link>
+
+                <div className="border-t my-2"></div>
+
+                <div className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase">
+                  Par type
+                </div>
+                <Link to="/recipes?type=entree" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                  🥗 Entrées
+                </Link>
+                <Link to="/recipes?type=plat" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                  🍽️ Plats
+                </Link>
+                <Link to="/recipes?type=dessert" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                  🍰 Desserts
+                </Link>
+
+                <div className="border-t my-2"></div>
+
+                <Link to="/recipes?diet=vegetarien" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition">
+                  🌱 Végétarien
+                </Link>
+              </div>
+            )}
+          </div>
+
 
             {currentUser && (
               <>

@@ -1,13 +1,13 @@
-import React from 'react';
-import RecipeCard from './RecipeCard';
 import Loading from '../common/Loading';
+import RecipeCard from './RecipeCard';
 
 const RecipeList = ({ 
   recipes, 
   loading, 
   favorites = [], 
   onToggleFavorite,
-  emptyMessage = "Aucune recette trouvée" 
+  emptyMessage = "Aucune recette trouvée",
+  categories = [] 
 }) => {
   if (loading) {
     return <Loading message="Chargement des recettes..." />;
@@ -27,20 +27,42 @@ const RecipeList = ({
     );
   }
 
-  const isFavorite = (recipeId) => {
-    return favorites.some(fav => fav.recetteEntity?.id === recipeId);
-  };
+  const isFavorite = (recipeId) => favorites.some(fav => fav.recetteEntity?.id === recipeId);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {recipes.map((recipe) => (
-        <RecipeCard
-          key={recipe.id}
-          recipe={recipe}
-          isFavorite={isFavorite(recipe.id)}
-          onToggleFavorite={onToggleFavorite}
-        />
-      ))}
+    <div className="flex flex-col lg:flex-row gap-6">
+      {/* CATEGORIES */}
+      {categories.length > 0 && (
+        <aside className="w-full lg:w-1/4">
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 sticky top-20">
+            <h4 className="text-sm font-bold text-gray-600 uppercase mb-3">Catégories</h4>
+            <ul className="space-y-2">
+              {categories.map((cat) => (
+                <li key={cat.id}>
+                  <button
+                    onClick={() => cat.onClick?.()}
+                    className="w-full text-left text-gray-700 hover:text-orange-500 hover:bg-orange-50 transition-colors px-3 py-1 rounded-lg text-sm font-medium"
+                  >
+                    {cat.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
+      )}
+
+      {/* RECIPES */}
+      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {recipes.map((recipe) => (
+          <RecipeCard
+            key={recipe.id}
+            recipe={recipe}
+            isFavorite={isFavorite(recipe.id)}
+            onToggleFavorite={onToggleFavorite}
+          />
+        ))}
+      </div>
     </div>
   );
 };

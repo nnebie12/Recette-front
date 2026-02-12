@@ -83,25 +83,32 @@ const AdminDashboard = () => {
 
     for (let i = 0; i < baseUsers.length; i += batchSize) {
       const batch = baseUsers.slice(i, i + batchSize);
-      
+
       const batchPromises = batch.map(async (user) => {
         try {
           const behaviorData = await userBehaviorService.getAdvancedAnalysis(user.id);
-          return { ...user, ai: behaviorData };
+          const nlpData = await adminService.getUserNlpInsight(user.id);
+
+          return {
+            ...user,
+            ai: behaviorData,
+            nlp: nlpData
+          };
         } catch (err) {
-          console.warn(`Comportement IA non disponible pour ${user.id}`, err.message);
-          return { 
-            ...user, 
-            ai: { 
-              metriques: { 
-                scoreEngagement: 0, 
+          return {
+            ...user,
+            ai: {
+              metriques: {
+                scoreEngagement: 0,
                 risqueChurn: 0,
-                profilUtilisateur: 'NOUVEAU' 
-              } 
-            } 
+                profilUtilisateur: 'NOUVEAU'
+              }
+            },
+            nlp: err.message ? { error: err.message } : null
           };
         }
       });
+
 
       const batchResults = await Promise.all(batchPromises);
       enriched.push(...batchResults);
@@ -332,6 +339,7 @@ const AdminDashboard = () => {
                       <th className="p-5 text-[10px] font-black text-slate-400 uppercase">Profil</th>
                       <th className="p-5 text-[10px] font-black text-slate-400 uppercase">Recettes</th>
                       <th className="p-5 text-[10px] font-black text-slate-400 uppercase text-right">Actions</th>
+                      <th className="p-5 text-[10px] font-black text-slate-400 uppercase"> 🧠 NLP</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -377,7 +385,35 @@ const AdminDashboard = () => {
                             <span className="text-sm font-bold text-slate-700">{user.recettesCount || 0}</span>
                           </td>
                           <td className="p-5 text-right">
-                            <AIQuickActions userId={user.id} userName={user.prenom} />
+                            <AIQuickActions
+                                userId={user.id}
+                                userName={user.prenom}
+                                nlp={user.nlp}
+                              />
+                          </td>
+                          <td className="p-5 max-w-[220px]">
+                            {user.nlp ? (
+                              <div className="space-y-1">
+                                <p className="text-xs text-slate-700 font-semibold line-clamp-2">
+                                  {user.nlp.summary}
+                                </p>
+
+                                <div className="flex flex-wrap gap-1">
+                                  {user.nlp.keywords?.slice(0, 3).map(k => (
+                                    <span
+                                      key={k}
+                                      className="text-[9px] px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full font-bold"
+                                    >
+                                      {k}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-[10px] italic text-slate-400">
+                                NLP non analysé
+                              </span>
+                            )}
                           </td>
                         </tr>
                       );

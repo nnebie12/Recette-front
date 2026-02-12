@@ -259,7 +259,175 @@ export const adminService = {
    */
   deleteUserRecommendations: async (userId) => {
     await apiService.delete(`/administrateur/recommandations/user/${userId}`);
+  },
+
+  // ==================== NLP (ADMIN ONLY) ====================
+
+/**
+ * Recherche sémantique de recettes (langage naturel)
+ * Usage : audit, tests, exploration
+ */
+semanticSearchRecipes: async (query, limit = 10) => {
+  try {
+    const response = await apiService.post(
+      '/api/v1/nlp/search/semantic',
+      { query },
+      { params: { limit } }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Erreur semanticSearchRecipes:', error);
+    throw error;
   }
+},
+
+getUserNlpInsight: async (userId) => {
+  try {
+    const response = await apiService.get(
+      `/nlp/users/${userId}/insights`
+    );
+    return response.data;
+  } catch (error) {
+    console.warn(`NLP indisponible pour user ${userId}`);
+    return error.response?.data || { message: 'NLP indisponible' };
+  }
+},
+
+/**
+ * Analyse le sentiment d'un commentaire (texte libre)
+ */
+analyzeSentiment: async (text) => {
+  try {
+    const response = await apiService.post(
+      '/api/v1/nlp/sentiment',
+      { text }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Erreur analyzeSentiment:', error);
+    throw error;
+  }
+},
+
+/**
+ * Récupère le sentiment moyen d'une recette
+ */
+getRecipeSentiment: async (recipeId) => {
+  try {
+    const response = await apiService.get(
+      `/api/v1/nlp/sentiment/recipe/${recipeId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Erreur getRecipeSentiment:', error);
+    throw error;
+  }
+},
+
+/**
+ * Trouve les recettes similaires via embeddings NLP
+ */
+getSimilarRecipesNLP: async (recipeId, limit = 10) => {
+  try {
+    const response = await apiService.get(
+      `/api/v1/nlp/similar/${recipeId}`,
+      { params: { limit } }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Erreur getSimilarRecipesNLP:', error);
+    throw error;
+  }
+},
+
+/**
+ * Calcule la similarité entre deux recettes spécifiques
+ */
+compareTwoRecipes: async (recipeId1, recipeId2) => {
+  try {
+    const response = await apiService.get(
+      `/api/v1/nlp/similarity/${recipeId1}/${recipeId2}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Erreur compareTwoRecipes:', error);
+    throw error;
+  }
+},
+
+/**
+ * Extraction des mots-clés d'une recette
+ */
+extractRecipeKeywords: async (recipeId) => {
+  try {
+    const response = await apiService.get(
+      `/api/v1/nlp/keywords/${recipeId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Erreur extractRecipeKeywords:', error);
+    throw error;
+  }
+},
+
+/**
+ * Auto-catégorisation NLP d'une recette
+ */
+autoCategorizeRecipe: async (recipeId) => {
+  try {
+    const response = await apiService.get(
+      `/api/v1/nlp/auto-categorize/${recipeId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Erreur autoCategorizeRecipe:', error);
+    throw error;
+  }
+},
+
+/**
+ * Catégorisation automatique en batch
+ */
+batchAutoCategorizeRecipes: async (limit = 100) => {
+  try {
+    const response = await apiService.post(
+      '/api/v1/nlp/batch-categorize',
+      null,
+      { params: { limit } }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Erreur batchAutoCategorizeRecipes:', error);
+    throw error;
+  }
+},
+
+/**
+ * Statistiques du service NLP
+ */
+getNLPStats: async () => {
+  try {
+    const response = await apiService.get('/api/v1/nlp/stats');
+    return response.data;
+  } catch (error) {
+    console.error('Erreur getNLPStats:', error);
+    throw error;
+  }
+},
+
+/**
+ * Nettoyage du cache NLP (maintenance)
+ */
+clearNLPCache: async () => {
+  try {
+    const response = await apiService.delete('/api/v1/nlp/cache');
+    return response.data;
+  } catch (error) {
+    console.error('Erreur clearNLPCache:', error);
+    throw error;
+  }
+},
+
 };
 
 // ==================== FONCTIONS UTILITAIRES ====================

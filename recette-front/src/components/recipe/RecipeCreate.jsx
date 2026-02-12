@@ -32,12 +32,13 @@ const RecipeCreate = ({ isOpen, onClose, onCreated }) => {
   };
 
   const handleImageChange = (file, preview) => {
-    setForm({ 
-      ...form, 
-      imageFile: file,
-      imageUrl: preview 
-    });
-  };
+  setForm(prev => ({
+    ...prev,
+    imageFile: file,
+    imageUrl: preview
+  }));
+};
+
 
   const addIngredient = () => {
     setForm({ ...form, ingredients: [...form.ingredients, { ingredientName: '', quantite: '' }] });
