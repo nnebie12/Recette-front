@@ -270,7 +270,7 @@ export const adminService = {
 semanticSearchRecipes: async (query, limit = 10) => {
   try {
     const response = await apiService.post(
-      '/api/v1/nlp/search/semantic',
+      '/v1/nlp/search/semantic',
       { query },
       { params: { limit } }
     );
@@ -284,7 +284,7 @@ semanticSearchRecipes: async (query, limit = 10) => {
 getUserNlpInsight: async (userId) => {
   try {
     const response = await apiService.get(
-      `/nlp/users/${userId}/insights`
+      `/v1/nlp/users/${userId}/insights`
     );
     return response.data;
   } catch (error) {
@@ -299,7 +299,7 @@ getUserNlpInsight: async (userId) => {
 analyzeSentiment: async (text) => {
   try {
     const response = await apiService.post(
-      '/api/v1/nlp/sentiment',
+      '/v1/nlp/sentiment',
       { text }
     );
     return response.data;
@@ -315,7 +315,7 @@ analyzeSentiment: async (text) => {
 getRecipeSentiment: async (recipeId) => {
   try {
     const response = await apiService.get(
-      `/api/v1/nlp/sentiment/recipe/${recipeId}`
+      `/v1/nlp/sentiment/recipe/${recipeId}`
     );
     return response.data;
   } catch (error) {
@@ -330,7 +330,7 @@ getRecipeSentiment: async (recipeId) => {
 getSimilarRecipesNLP: async (recipeId, limit = 10) => {
   try {
     const response = await apiService.get(
-      `/api/v1/nlp/similar/${recipeId}`,
+      `/v1/nlp/similar/${recipeId}`,
       { params: { limit } }
     );
     return response.data;
@@ -346,7 +346,7 @@ getSimilarRecipesNLP: async (recipeId, limit = 10) => {
 compareTwoRecipes: async (recipeId1, recipeId2) => {
   try {
     const response = await apiService.get(
-      `/api/v1/nlp/similarity/${recipeId1}/${recipeId2}`
+      `/v1/nlp/similarity/${recipeId1}/${recipeId2}`
     );
     return response.data;
   } catch (error) {
@@ -361,7 +361,7 @@ compareTwoRecipes: async (recipeId1, recipeId2) => {
 extractRecipeKeywords: async (recipeId) => {
   try {
     const response = await apiService.get(
-      `/api/v1/nlp/keywords/${recipeId}`
+      `/v1/nlp/keywords/${recipeId}`
     );
     return response.data;
   } catch (error) {
@@ -376,7 +376,7 @@ extractRecipeKeywords: async (recipeId) => {
 autoCategorizeRecipe: async (recipeId) => {
   try {
     const response = await apiService.get(
-      `/api/v1/nlp/auto-categorize/${recipeId}`
+      `/v1/nlp/auto-categorize/${recipeId}`
     );
     return response.data;
   } catch (error) {
@@ -391,7 +391,7 @@ autoCategorizeRecipe: async (recipeId) => {
 batchAutoCategorizeRecipes: async (limit = 100) => {
   try {
     const response = await apiService.post(
-      '/api/v1/nlp/batch-categorize',
+      '/v1/nlp/batch-categorize',
       null,
       { params: { limit } }
     );
@@ -407,7 +407,7 @@ batchAutoCategorizeRecipes: async (limit = 100) => {
  */
 getNLPStats: async () => {
   try {
-    const response = await apiService.get('/api/v1/nlp/stats');
+    const response = await apiService.get('/v1/nlp/stats');
     return response.data;
   } catch (error) {
     console.error('Erreur getNLPStats:', error);
@@ -420,7 +420,7 @@ getNLPStats: async () => {
  */
 clearNLPCache: async () => {
   try {
-    const response = await apiService.delete('/api/v1/nlp/cache');
+    const response = await apiService.delete('/v1/nlp/cache');
     return response.data;
   } catch (error) {
     console.error('Erreur clearNLPCache:', error);
