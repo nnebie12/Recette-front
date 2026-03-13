@@ -22,10 +22,8 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <ChefHat className="w-8 h-8 text-orange-500" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
-              RecetteApp
-            </span>
+            
+            <img src="public/assets/logo/Gemini_Generated_Image_d8l9yqd8l9yqd8l9.png" alt="RecetteApp Logo" className="w-10 h-10" /> {/* Logo caché pour les moteurs de recherche */}
           </Link>
 
           {/* Desktop Navigation */}
