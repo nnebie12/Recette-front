@@ -1,25 +1,38 @@
-import { useState, useContext } from 'react';
-import { Clock, Star, Heart, User, Calendar, MessageCircle, Trash2 } from 'lucide-react';
+import { useContext, useState } from 'react';
+import {
+  Calendar, Clock, Heart, MessageCircle, Star, Trash2, User,
+} from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import Button from '../common/Button';
 import Card from '../common/Card';
+import RecipeImage from './RecipeImage';
 import { formatCookingTime, formatDate, getDifficultyColor } from '../../utils/helpers';
 import CommentList from '../comment/CommentList';
 import CommentForm from '../comment/CommentForm';
 import RatingForm from '../rating/RatingForm';
 import RecipeEdit from './RecipeEdit';
 
-
-
-const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAddRating, onReload, onDeleteRequest }) => {
+const RecipeDetail = ({
+  recipe,
+  isFavorite,
+  onToggleFavorite,
+  onAddComment,
+  onAddRating,
+  onReload,
+  onDeleteRequest,
+}) => {
   const { currentUser } = useContext(AuthContext);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [showRatingForm, setShowRatingForm] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  
 
   const totalTime = (recipe.tempsPreparation || 0) + (recipe.tempsCuisson || 0);
   const averageRating = recipe.moyenneNotes || 0;
+
+  const isOwner =
+    currentUser &&
+    recipe.userEntity?.id &&
+    currentUser.id === recipe.userEntity.id;
 
   const handleCommentSubmit = (commentData) => {
     if (onAddComment) {
@@ -35,38 +48,32 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
     }
   };
 
-  const reloadRecipe = () => {
-    onReload?.();
-  };
-
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
       <Card>
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Image */}
-          <div className="relative h-96 bg-gradient-to-br from-orange-200 to-red-200 rounded-lg overflow-hidden">
-            {recipe.imageUrl ? (
-              <img
-                src={recipe.imageUrl}
-                alt={recipe.titre}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-9xl">🍳</span>
-              </div>
-            )}
+
+          {/* ── Image ── */}
+          <div className="relative h-96 rounded-lg overflow-hidden bg-gradient-to-br from-orange-100 to-red-100">
+            {/* RecipeImage gère le fallback automatique */}
+            <RecipeImage
+              recipe={recipe}
+              className="w-full h-full object-cover"
+            />
           </div>
 
-          {/* Info */}
+          {/* ── Infos ── */}
           <div>
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
                   {recipe.titre}
                 </h1>
-                <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${getDifficultyColor(recipe.difficulte)}`}>
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${getDifficultyColor(
+                    recipe.difficulte
+                  )}`}
+                >
                   {recipe.difficulte || 'MOYEN'}
                 </span>
               </div>
@@ -84,9 +91,7 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
               )}
             </div>
 
-            <p className="text-gray-600 mb-6">
-              {recipe.description}
-            </p>
+            <p className="text-gray-600 mb-6">{recipe.description}</p>
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-4 mb-6">
@@ -97,7 +102,6 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
                   <p className="font-semibold">{formatCookingTime(totalTime)}</p>
                 </div>
               </div>
-
               <div className="flex items-center space-x-2">
                 <Star className="w-5 h-5 text-yellow-400" />
                 <div>
@@ -107,7 +111,6 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
                   </p>
                 </div>
               </div>
-
               <div className="flex items-center space-x-2">
                 <User className="w-5 h-5 text-orange-500" />
                 <div>
@@ -115,7 +118,6 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
                   <p className="font-semibold">{recipe.userName || 'Anonyme'}</p>
                 </div>
               </div>
-
               <div className="flex items-center space-x-2">
                 <Calendar className="w-5 h-5 text-orange-500" />
                 <div>
@@ -140,40 +142,43 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
                 <Button
                   variant="outline"
                   fullWidth
-                  onClick={() => setEditOpen(true)}
-                >
-                  Modifier la recette
-                </Button>
-                  {editOpen && ( 
-                <RecipeEdit
-                  recipe={recipe}
-                  isOpen={editOpen}
-                  onClose={() => setEditOpen(false)}
-                  onUpdate={reloadRecipe}
-                />
-                  )}
-                
-                <Button
-                  variant="outline"
-                  fullWidth
                   onClick={() => setShowCommentForm(!showCommentForm)}
                 >
                   <MessageCircle className="w-5 h-5 mr-2" />
                   Ajouter un commentaire
                 </Button>
-                <Button 
-                variant="danger" 
-                onClick={onDeleteRequest} 
-              >
-                <Trash2 className="w-5 h-5" />
-              </Button>
+
+                {isOwner && (
+                  <>
+                    <Button
+                      variant="outline"
+                      fullWidth
+                      onClick={() => setEditOpen(true)}
+                    >
+                      Modifier la recette
+                    </Button>
+                    <Button variant="danger" fullWidth onClick={onDeleteRequest}>
+                      <Trash2 className="w-5 h-5 mr-2" />
+                      Supprimer la recette
+                    </Button>
+                  </>
+                )}
+
+                {editOpen && (
+                  <RecipeEdit
+                    recipe={recipe}
+                    isOpen={editOpen}
+                    onClose={() => setEditOpen(false)}
+                    onUpdate={() => onReload?.()}
+                  />
+                )}
               </div>
             )}
           </div>
         </div>
       </Card>
 
-      {/* Rating Form */}
+      {/* Formulaire notation */}
       {showRatingForm && currentUser && (
         <Card>
           <h3 className="text-xl font-semibold mb-4">Noter cette recette</h3>
@@ -181,7 +186,7 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
         </Card>
       )}
 
-      {/* Preparation & Cooking Times */}
+      {/* Temps */}
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <h3 className="text-xl font-semibold mb-4">⏱️ Temps de préparation</h3>
@@ -189,7 +194,6 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
             {formatCookingTime(recipe.tempsPreparation)}
           </p>
         </Card>
-
         <Card>
           <h3 className="text-xl font-semibold mb-4">🔥 Temps de cuisson</h3>
           <p className="text-2xl font-bold text-orange-500">
@@ -198,14 +202,14 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
         </Card>
       </div>
 
-      {/* Ingredients */}
+      {/* Ingrédients */}
       {recipe.ingredients && recipe.ingredients.length > 0 && (
         <Card>
           <h3 className="text-xl font-semibold mb-4">🥘 Ingrédients</h3>
           <ul className="space-y-2">
             {recipe.ingredients.map((ingredient, index) => (
               <li key={index} className="flex items-center">
-                <span className="w-2 h-2 bg-orange-500 rounded-full mr-3"></span>
+                <span className="w-2 h-2 bg-orange-500 rounded-full mr-3" />
                 <span className="font-medium">{ingredient.quantite}</span>
                 <span className="ml-2">{ingredient.ingredientName}</span>
               </li>
@@ -214,7 +218,7 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
         </Card>
       )}
 
-      {/* Comments Section */}
+      {/* Commentaires */}
       <Card>
         <h3 className="text-xl font-semibold mb-4 flex items-center">
           <MessageCircle className="w-6 h-6 mr-2" />
@@ -235,7 +239,6 @@ const RecipeDetail = ({ recipe, isFavorite, onToggleFavorite, onAddComment, onAd
           </p>
         )}
       </Card>
-      
     </div>
   );
 };

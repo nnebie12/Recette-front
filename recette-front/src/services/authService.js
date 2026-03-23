@@ -1,34 +1,59 @@
 import { apiService } from './api';
 import { STORAGE_KEYS } from '../utils/constants';
 
+// Notifie l'extension Chrome d'un changement de session
+function dispatchAuthEvent(type, payload = null) {
+  try {
+    window.dispatchEvent(
+      new CustomEvent('recipe-ai:auth', {
+        detail: { type, payload },
+      })
+    );
+  } catch {
+    // Extension non installée — pas bloquant
+  }
+}
+
 export const authService = {
-  // Login user
   login: async (email, motDePasse) => {
-    const response = await apiService.post('/v1/auth/login', { 
-      email, 
-      motDePasse 
+    const response = await apiService.post('/v1/auth/login', {
+      email,
+      motDePasse,
     });
-    
+
     if (response.data.token) {
       localStorage.setItem(STORAGE_KEYS.TOKEN, response.data.token);
+
+      // Récupérer l'utilisateur complet pour le passer à l'extension
+      const user = await authService.getCurrentUser();
+
+      // Synchronise l'extension Chrome
+      dispatchAuthEvent('LOGIN', {
+        token: response.data.token,
+        user: {
+          id: user.id,
+          nom: `${user.prenom || ''} ${user.nom || ''}`.trim(),
+          email: user.email,
+        },
+      });
     }
-    
+
     return response.data;
   },
 
-  // Register new user
   register: async (userData) => {
     const response = await apiService.post('/v1/auth/register', userData);
     return response.data;
   },
 
-  // Logout user
   logout: () => {
     localStorage.removeItem(STORAGE_KEYS.TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER);
+
+    // Désynchronise l'extension Chrome
+    dispatchAuthEvent('LOGOUT');
   },
 
-  // Get current user
   getCurrentUser: async () => {
     const response = await apiService.get('/v1/auth/me');
     const user = response.data;
@@ -36,25 +61,21 @@ export const authService = {
     return user;
   },
 
-  // Validate token
   validateToken: async () => {
     const response = await apiService.post('/v1/auth/validate');
     return response.data;
   },
 
-  // Check if user is authenticated
   isAuthenticated: () => {
     return !!localStorage.getItem(STORAGE_KEYS.TOKEN);
   },
 
-  // Get stored token
   getToken: () => {
     return localStorage.getItem(STORAGE_KEYS.TOKEN);
   },
 
-  // Get stored user
   getStoredUser: () => {
     const user = localStorage.getItem(STORAGE_KEYS.USER);
     return user ? JSON.parse(user) : null;
-  }
+  },
 };

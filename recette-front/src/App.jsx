@@ -10,6 +10,7 @@ import PrivacyPolicy from './components/legals/PrivacyPolicy';
 import TermsOfService from './components/legals/TermsOfService';
 import { AuthContext } from './context/AuthContext';
 import { AuthProvider } from './context/AuthProvider';
+import { ToastProvider } from './components/common/Toast';
 import AdminDashboard from './pages/AdminDashboard';
 import Favorites from './pages/Favorites';
 import Home from './pages/Home';
@@ -29,24 +30,20 @@ const ProtectedRoute = ({ children }) => {
 
 const AdminProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useContext(AuthContext);
-  const token = localStorage.getItem('auth_token'); 
+  const token = localStorage.getItem('auth_token');
 
-  // On attend que l'AuthContext ait fini de charger
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Chargement...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">Chargement...</div>
+    );
   }
 
-  // Vérification du token physique
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!token) return <Navigate to="/login" replace />;
 
-  // Vérification du rôle admin
-  const role = currentUser?.role?.toUpperCase() || "";
+  const role = currentUser?.role?.toUpperCase() || '';
   const isAdmin = role === 'ADMIN' || role === 'ADMINISTRATEUR';
 
   if (!currentUser || !isAdmin) {
-    console.warn("Accès refusé : Profil non admin", role);
     return <Navigate to="/" replace />;
   }
 
@@ -57,80 +54,58 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="flex flex-col min-h-screen">
-          <Navbar />
-          <main className="flex-grow">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/recipes" element={<Recipes />} />
-              <Route path="/recipes/:id" element={<RecipeDetailsPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
+        {/* ToastProvider enveloppe toute l'app pour être disponible partout */}
+        <ToastProvider>
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow">
+              <Routes>
+                {/* Routes publiques */}
+                <Route path="/" element={<Home />} />
+                <Route path="/recipes" element={<Recipes />} />
+                <Route path="/recipes/:id" element={<RecipeDetailsPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
 
-              {/* Legal Routes */}
-              <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/legal" element={<LegalNotice />} />
+                {/* Routes légales */}
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/legal" element={<LegalNotice />} />
 
-              {/* About Routes */}
-              <Route path="/about" element={<AboutUs />} />
-              <Route path="/team" element={<Team />} />
-              <Route path="/contact" element={<Contact />} />
+                {/* À propos */}
+                <Route path="/about" element={<AboutUs />} />
+                <Route path="/team" element={<Team />} />
+                <Route path="/contact" element={<Contact />} />
 
-              {/* Protected Routes */}
-              <Route
-                path="/favorites"
-                element={
-                  <ProtectedRoute>
-                    <Favorites />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Routes protégées */}
+                <Route
+                  path="/favorites"
+                  element={<ProtectedRoute><Favorites /></ProtectedRoute>}
+                />
+                <Route
+                  path="/search-history"
+                  element={<ProtectedRoute><SearchHistoryPage /></ProtectedRoute>}
+                />
+                <Route
+                  path="/recommendations"
+                  element={<ProtectedRoute><RecommendationsPage /></ProtectedRoute>}
+                />
+                <Route
+                  path="/profile"
+                  element={<ProtectedRoute><ProfilePage /></ProtectedRoute>}
+                />
+                <Route
+                  path="/admin"
+                  element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>}
+                />
 
-              <Route
-                path="/search-history"
-                element={
-                  <ProtectedRoute>
-                    <SearchHistoryPage />
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* UNE SEULE ROUTE pour les recommandations IA */}
-              <Route
-                path="/recommendations"
-                element={
-                  <ProtectedRoute>
-                    <RecommendationsPage />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/admin"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminDashboard />
-                  </AdminProtectedRoute>
-                }
-              />
-
-              {/* 404 */}
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
+                {/* 404 */}
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </ToastProvider>
       </AuthProvider>
     </Router>
   );

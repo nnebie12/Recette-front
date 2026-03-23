@@ -7,11 +7,12 @@ import { AuthContext } from '../context/AuthContext';
 import { useRecommendations } from '../hooks/useRecommendation';
 
 const RECOMMENDATION_TYPES = [
-  { key: 'PERSONNALISEE', label: 'Personnalisée', icon: Sparkles, color: 'orange' },
-  { key: 'SAISONNIERE', label: 'Saisonnière', icon: Leaf, color: 'green' },
-  { key: 'CRENEAU', label: 'Par créneau', icon: Clock, color: 'blue' },
-  { key: 'HABITUDES', label: 'Habitudes', icon: TrendingUp, color: 'purple' },
-  { key: 'ENGAGEMENT', label: 'Engagement', icon: Zap, color: 'yellow' },
+  { key: 'PERSONNALISEE', label: 'Personnalisée', icon: Sparkles },
+  { key: 'SAISONNIERE', label: 'Saisonnière', icon: Leaf },
+  // Clé corrigée : CRENEAU_ACTUEL
+  { key: 'CRENEAU_ACTUEL', label: 'Par créneau', icon: Clock },
+  { key: 'HABITUDES', label: 'Habitudes', icon: TrendingUp },
+  { key: 'ENGAGEMENT', label: 'Engagement', icon: Zap },
 ];
 
 const FILTER_TABS = [
@@ -31,42 +32,34 @@ const RecommendationsPage = () => {
     loadRecommendationsByType,
     generateRecommendation,
     markAsUsed,
-    clearError
+    clearError,
   } = useRecommendations(currentUser?.id);
 
-  // Chargement initial
+  // Un seul useEffect propre — plus de double appel
   useEffect(() => {
-    if (currentUser?.id) {
-      loadRecommendations();
-    }
-  }, [currentUser?.id, loadRecommendations]);
+    if (!currentUser?.id) return;
 
-  useEffect(() => {
-  if (!currentUser?.id) return;
-
-  const fetchDatas = async () => {
     if (activeTab === 'ALL') {
-      await loadRecommendations();
+      loadRecommendations();
     } else {
-      await loadRecommendationsByType(activeTab);
+      loadRecommendationsByType(activeTab);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id, activeTab]);
 
-  fetchDatas();
-}, [currentUser?.id, activeTab, loadRecommendations, loadRecommendationsByType]);
   const handleGenerateRecommendation = async (type) => {
     try {
       await generateRecommendation(type);
-    } catch (error) {
-      console.error('Erreur génération:', error);
+    } catch (err) {
+      console.error('Erreur génération:', err);
     }
   };
 
   const handleMarkAsUsed = async (recommendationId) => {
     try {
       await markAsUsed(recommendationId);
-    } catch (error) {
-      console.error('Erreur marquage:', error);
+    } catch (err) {
+      console.error('Erreur marquage:', err);
     }
   };
 
@@ -75,7 +68,9 @@ const RecommendationsPage = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h3 className="text-xl font-semibold text-red-700 mb-2">Accès refusé</h3>
-          <p className="text-gray-500">Vous devez être connecté pour voir vos recommandations.</p>
+          <p className="text-gray-500">
+            Vous devez être connecté pour voir vos recommandations.
+          </p>
         </div>
       </div>
     );
@@ -84,7 +79,7 @@ const RecommendationsPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
@@ -102,7 +97,7 @@ const RecommendationsPage = () => {
                 </p>
               </div>
             </div>
-            
+
             <Button
               variant="outline"
               icon={RefreshCw}
@@ -113,7 +108,7 @@ const RecommendationsPage = () => {
             </Button>
           </div>
 
-          {/* Messages d'erreur */}
+          {/* Erreur */}
           {error && (
             <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <p className="text-yellow-800 text-sm">{error}</p>
@@ -126,7 +121,7 @@ const RecommendationsPage = () => {
             </div>
           )}
 
-          {/* Générateur de recommandations IA */}
+          {/* Générateur */}
           <div className="bg-white rounded-xl p-6 shadow-md">
             <div className="flex items-center gap-2 mb-4">
               <Brain className="w-5 h-5 text-orange-500" />
@@ -135,9 +130,10 @@ const RecommendationsPage = () => {
               </h3>
             </div>
             <p className="text-sm text-gray-600 mb-6">
-              L'IA analyse automatiquement votre comportement, vos interactions et votre historique pour créer des recommandations personnalisées
+              L'IA analyse votre comportement, vos interactions et votre historique
+              pour créer des recommandations personnalisées.
             </p>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {RECOMMENDATION_TYPES.map((type) => {
                 const IconComponent = type.icon;
@@ -163,7 +159,7 @@ const RecommendationsPage = () => {
         {/* Filtres par onglets */}
         <div className="mb-6 border-b border-gray-200">
           <nav className="flex space-x-4 overflow-x-auto">
-            {FILTER_TABS.map(tab => (
+            {FILTER_TABS.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
@@ -179,7 +175,7 @@ const RecommendationsPage = () => {
           </nav>
         </div>
 
-        {/* Liste des recommandations */}
+        {/* Liste */}
         {loading ? (
           <Loading message="Chargement des recommandations..." />
         ) : (
