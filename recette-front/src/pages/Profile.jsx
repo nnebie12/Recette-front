@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { User, Mail, Award, Heart, MessageCircle, Star } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { recipeService } from '../services/recipeService';
@@ -18,11 +18,9 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('recipes');
 
-  useEffect(() => {
-    if (currentUser) loadUserData();
-  }, [currentUser]);
+  const loadUserData = useCallback(async () => {
+    if (!currentUser?.id) return;
 
-  const loadUserData = async () => {
     setLoading(true);
     try {
       const [recipes, favs, behavior] = await Promise.all([
@@ -38,7 +36,13 @@ const ProfilePage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    if (currentUser?.id) {
+      loadUserData();
+    }
+  }, [currentUser?.id, loadUserData]);
 
   if (loading) return <Loading fullScreen message="Chargement du profil..." />;
 

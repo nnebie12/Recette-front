@@ -1,19 +1,56 @@
 import { Calendar, Download, Eye, Filter, Sparkles, Trash2, TrendingUp, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Button from '../common/Button';
 import Card from '../common/Card';
 import ConfirmationModal from '../common/ConfirmationModal';
 import Loading from '../common/Loading';
+import { useToast } from '../../context/ToastContext';
 
 const RECOMMENDATION_TYPES = {
-  PERSONNALISEE: { label: 'Personnalisée', color: 'orange', icon: Sparkles },
-  SAISONNIERE: { label: 'Saisonnière', color: 'green', icon: Calendar },
-  HABITUDES: { label: 'Habitudes', color: 'purple', icon: TrendingUp },
-  CRENEAU_ACTUEL: { label: 'Par Créneau', color: 'blue', icon: Calendar },
-  ENGAGEMENT: { label: 'Engagement', color: 'yellow', icon: TrendingUp },
+  PERSONNALISEE: {
+    label: 'Personnalisée',
+    icon: Sparkles,
+    cardClass: 'bg-orange-50 border-orange-200',
+    iconClass: 'text-orange-600',
+    valueClass: 'text-orange-600',
+    badgeClass: 'bg-orange-100 text-orange-700',
+  },
+  SAISONNIERE: {
+    label: 'Saisonnière',
+    icon: Calendar,
+    cardClass: 'bg-green-50 border-green-200',
+    iconClass: 'text-green-600',
+    valueClass: 'text-green-600',
+    badgeClass: 'bg-green-100 text-green-700',
+  },
+  HABITUDES: {
+    label: 'Habitudes',
+    icon: TrendingUp,
+    cardClass: 'bg-purple-50 border-purple-200',
+    iconClass: 'text-purple-600',
+    valueClass: 'text-purple-600',
+    badgeClass: 'bg-purple-100 text-purple-700',
+  },
+  CRENEAU_ACTUEL: {
+    label: 'Par Créneau',
+    icon: Calendar,
+    cardClass: 'bg-blue-50 border-blue-200',
+    iconClass: 'text-blue-600',
+    valueClass: 'text-blue-600',
+    badgeClass: 'bg-blue-100 text-blue-700',
+  },
+  ENGAGEMENT: {
+    label: 'Engagement',
+    icon: TrendingUp,
+    cardClass: 'bg-yellow-50 border-yellow-200',
+    iconClass: 'text-yellow-600',
+    valueClass: 'text-yellow-600',
+    badgeClass: 'bg-yellow-100 text-yellow-700',
+  },
 };
 
 const RecommendationAdminPanel = ({ adminService }) => {
+  const toast = useToast();
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,11 +64,7 @@ const RecommendationAdminPanel = ({ adminService }) => {
     parType: {}
   });
 
-  useEffect(() => {
-    loadRecommendations();
-  }, []);
-
-  const loadRecommendations = async () => {
+  const loadRecommendations = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -44,7 +77,11 @@ const RecommendationAdminPanel = ({ adminService }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [adminService]);
+
+  useEffect(() => {
+    loadRecommendations();
+  }, [loadRecommendations]);
 
   const calculateStats = (data) => {
     const parType = {};
@@ -66,9 +103,10 @@ const RecommendationAdminPanel = ({ adminService }) => {
       await adminService.deleteRecommendation(recToDelete.id);
       await loadRecommendations();
       setRecToDelete(null);
+      toast.success('Recommandation supprimée avec succès.');
     } catch (err) {
       console.error('Erreur suppression:', err);
-      alert('Erreur lors de la suppression de la recommandation.');
+      toast.error('Erreur lors de la suppression de la recommandation.');
     }
   };
 
@@ -201,12 +239,12 @@ const RecommendationAdminPanel = ({ adminService }) => {
             const IconComponent = config.icon;
             const count = stats.parType[key] || 0;
             return (
-              <div key={key} className={`p-3 bg-${config.color}-50 border border-${config.color}-200 rounded-lg`}>
+              <div key={key} className={`p-3 rounded-lg border ${config.cardClass}`}>
                 <div className="flex items-center gap-2 mb-1">
-                  <IconComponent className={`w-4 h-4 text-${config.color}-600`} />
+                  <IconComponent className={`w-4 h-4 ${config.iconClass}`} />
                   <p className="text-xs font-medium text-gray-600">{config.label}</p>
                 </div>
-                <p className={`text-2xl font-bold text-${config.color}-600`}>{count}</p>
+                <p className={`text-2xl font-bold ${config.valueClass}`}>{count}</p>
               </div>
             );
           })}
@@ -280,14 +318,15 @@ const RecommendationAdminPanel = ({ adminService }) => {
                 {filteredRecommendations.map((rec) => {
                   const typeConfig = RECOMMENDATION_TYPES[rec.type] || {};
                   const IconComponent = typeConfig.icon || Sparkles;
+                  const badgeClass = typeConfig.badgeClass || 'bg-gray-100 text-gray-700';
                   
                   return (
                     <tr key={rec.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">#{rec.id}</td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full bg-${typeConfig.color}-100 text-${typeConfig.color}-700`}>
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${badgeClass}`}>
                           <IconComponent className="w-3 h-3" />
-                          {typeConfig.label}
+                          {typeConfig.label || rec.type}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">

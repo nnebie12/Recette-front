@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, ChefHat, Filter, X } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
@@ -49,20 +49,7 @@ const Recipes = () => {
   const [maxTime, setMaxTime] = useState('');
   const [sortBy, setSortBy] = useState('date_desc');
 
-  useEffect(() => {
-    loadRecipes();
-    if (currentUser && currentUser.id) loadFavorites();
-  }, [currentUser]);
-
-  useEffect(() => applyFilters(), [recipes, searchTerm, selectedCuisine, selectedType, selectedDifficulty, isVegetarian, maxTime, sortBy]);
-
-  useEffect(() => {
-    setSelectedCuisine(searchParams.get('cuisine') || '');
-    setSelectedType(searchParams.get('type') || '');
-    setIsVegetarian(searchParams.get('diet') === 'vegetarien');
-  }, [searchParams]);
-
-  const loadRecipes = async () => {
+  const loadRecipes = useCallback(async () => {
     setLoading(true);
     try {
       const data = await recipeService.getAllRecipes();
@@ -70,26 +57,31 @@ const Recipes = () => {
     } catch (error) {
       console.error(error);
     } finally { setLoading(false); }
-  };
+  }, []);
 
-  const loadFavorites = async () => {
+  const loadFavorites = useCallback(async () => {
+    if (!currentUser?.id) return;
+
     try {
       const data = await favoriteService.getUserFavorites(currentUser.id);
       setFavorites(data);
     } catch (error) {
       console.error(error);
     }
-  };
+  }, [currentUser?.id]);
 
-  const handleSearchSubmit = async (e) => {
-    e.preventDefault();
-    if (currentUser && searchTerm?.trim()) {
-      try { await searchHistoryService.recordSearch(currentUser.id, searchTerm, []); } 
-      catch (error) { console.error(error); }
+  const sortRecipes = useCallback((recipesToSort, sortOption) => {
+    const sorted = [...recipesToSort];
+    switch (sortOption) {
+      case 'date_desc': return sorted.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation));
+      case 'date_asc': return sorted.sort((a, b) => new Date(a.dateCreation) - new Date(b.dateCreation));
+      case 'time_asc': return sorted.sort((a, b) => ((a.tempsPreparation || 0) + (a.tempsCuisson || 0)) - ((b.tempsPreparation || 0) + (b.tempsCuisson || 0)));
+      case 'time_desc': return sorted.sort((a, b) => ((b.tempsPreparation || 0) + (b.tempsCuisson || 0)) - ((a.tempsPreparation || 0) + (a.tempsCuisson || 0)));
+      default: return sorted;
     }
-  };
+  }, []);
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...recipes];
     if (searchTerm) filtered = filtered.filter(r => r.titre?.toLowerCase().includes(searchTerm.toLowerCase()) || r.description?.toLowerCase().includes(searchTerm.toLowerCase()));
     if (selectedCuisine) filtered = filtered.filter(r => r.cuisine?.toLowerCase() === selectedCuisine.toLowerCase());
@@ -97,20 +89,32 @@ const Recipes = () => {
     if (selectedDifficulty) filtered = filtered.filter(r => r.difficulte === selectedDifficulty);
     if (isVegetarian) filtered = filtered.filter(r => r.vegetarien === true);
     if (maxTime) {
-      const maxMinutes = parseInt(maxTime);
+      const maxMinutes = parseInt(maxTime, 10);
       filtered = filtered.filter(r => (r.tempsPreparation || 0) + (r.tempsCuisson || 0) <= maxMinutes);
     }
     setFilteredRecipes(sortRecipes(filtered, sortBy));
-  };
+  }, [recipes, searchTerm, selectedCuisine, selectedType, selectedDifficulty, isVegetarian, maxTime, sortBy, sortRecipes]);
 
-  const sortRecipes = (recipesToSort, sortOption) => {
-    const sorted = [...recipesToSort];
-    switch (sortOption) {
-      case 'date_desc': return sorted.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation));
-      case 'date_asc': return sorted.sort((a, b) => new Date(a.dateCreation) - new Date(b.dateCreation));
-      case 'time_asc': return sorted.sort((a, b) => ((a.tempsPreparation||0)+(a.tempsCuisson||0)) - ((b.tempsPreparation||0)+(b.tempsCuisson||0)));
-      case 'time_desc': return sorted.sort((a, b) => ((b.tempsPreparation||0)+(b.tempsCuisson||0)) - ((a.tempsPreparation||0)+(a.tempsCuisson||0)));
-      default: return sorted;
+  useEffect(() => {
+    loadRecipes();
+    if (currentUser?.id) loadFavorites();
+  }, [currentUser?.id, loadRecipes, loadFavorites]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
+
+  useEffect(() => {
+    setSelectedCuisine(searchParams.get('cuisine') || '');
+    setSelectedType(searchParams.get('type') || '');
+    setIsVegetarian(searchParams.get('diet') === 'vegetarien');
+  }, [searchParams]);
+
+  const handleSearchSubmit = async (e) => {
+    e.preventDefault();
+    if (currentUser && searchTerm?.trim()) {
+      try { await searchHistoryService.recordSearch(currentUser.id, searchTerm, []); } 
+      catch (error) { console.error(error); }
     }
   };
 

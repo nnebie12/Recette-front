@@ -1,28 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Edit, Trash2 } from 'lucide-react';
 import Loading from '../common/Loading';
 import Button from '../common/Button';
 import ConfirmationModal from '../common/ConfirmationModal'; 
 import UserEditModal from './UserEditModal';
+import { useToast } from '../../context/ToastContext';
 
 const UserManagement = ({ adminService }) => {
+  const toast = useToast();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userToEdit, setUserToEdit] = useState(null);
   const [userToDelete, setUserToDelete] = useState(null);
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await adminService.getAllUsers();
-      console.log('Données reçues:', data); // Debug
-      
+
       // Vérifier si data est un tableau, sinon essayer d'extraire le tableau
       if (Array.isArray(data)) {
         setUsers(data);
@@ -44,16 +41,21 @@ const UserManagement = ({ adminService }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [adminService]);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   const handleUpdateUser = async (id, updatedData) => {
     try {
       await adminService.updateUser(id, updatedData);
       await loadUsers(); // Recharger après modification
       setUserToEdit(null); 
+      toast.success('Utilisateur mis à jour avec succès.');
     } catch (err) {
       console.error("Erreur lors de la mise à jour:", err);
-      alert("Erreur lors de la mise à jour de l'utilisateur.");
+      toast.error("Erreur lors de la mise à jour de l'utilisateur.");
     }
   };
 
@@ -64,9 +66,10 @@ const UserManagement = ({ adminService }) => {
       await adminService.deleteUser(userToDelete.id);
       await loadUsers(); // Recharger après suppression
       setUserToDelete(null); 
+      toast.success('Utilisateur supprimé avec succès.');
     } catch (err) {
       console.error("Erreur lors de la suppression:", err);
-      alert("Erreur lors de la suppression de l'utilisateur.");
+      toast.error("Erreur lors de la suppression de l'utilisateur.");
     }
   };
 
