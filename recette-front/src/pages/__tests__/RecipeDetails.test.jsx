@@ -1,8 +1,7 @@
-import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import RecipeDetailsPage from '../RecipeDetails';
 import { AuthContext } from '../../context/AuthContext';
+import RecipeDetailsPage from '../RecipeDetails';
 
 const navigateMock = vi.fn();
 const toastMock = {

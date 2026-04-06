@@ -1,8 +1,7 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import AdminDashboard from '../AdminDashboard';
 import { AuthContext } from '../../context/AuthContext';
+import AdminDashboard from '../AdminDashboard';
 
 const navigateMock = vi.fn();
 

@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
 import { Edit, Trash2 } from 'lucide-react';
-import Loading from '../common/Loading';
-import Button from '../common/Button';
-import ConfirmationModal from '../common/ConfirmationModal'; 
-import UserEditModal from './UserEditModal';
+import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '../../context/ToastContext';
+import Button from '../common/Button';
+import ConfirmationModal from '../common/ConfirmationModal';
+import Loading from '../common/Loading';
+import UserEditModal from './UserEditModal';
 
 const UserManagement = ({ adminService }) => {
   const toast = useToast();

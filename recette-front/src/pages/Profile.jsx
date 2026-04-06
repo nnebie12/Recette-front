@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { User, Mail, Award, Heart, MessageCircle, Star } from 'lucide-react';
-import { AuthContext } from '../context/AuthContext';
-import { recipeService } from '../services/recipeService';
-import { favoriteService } from '../services/favoriteService';
-import { userService } from '../services/userService';
+import { Award, Heart, Mail, MessageCircle, Star, User } from 'lucide-react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import Card from '../components/common/Card';
-import RecipeList from '../components/recipe/RecipeList';
 import Loading from '../components/common/Loading';
-import SearchHistoryPage from './SearchHistoryPage';
+import RecipeList from '../components/recipe/RecipeList';
+import { AuthContext } from '../context/AuthContext';
+import { favoriteService } from '../services/favoriteService';
+import { recipeService } from '../services/recipeService';
+import { userService } from '../services/userService';
 import { getProfileColor } from '../utils/helpers';
+import SearchHistoryPage from './SearchHistoryPage';
 
 const ProfilePage = () => {
   const { currentUser } = useContext(AuthContext);

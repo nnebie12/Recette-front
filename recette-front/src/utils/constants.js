@@ -1,4 +1,4 @@
-import { Sparkles, Leaf, Clock, TrendingUp, Zap } from 'lucide-react';
+import { Clock, Leaf, Sparkles, TrendingUp, Zap } from 'lucide-react';
 
 // API Configuration
 const DEFAULT_API_BASE_URL = 'http://localhost:8080/api';

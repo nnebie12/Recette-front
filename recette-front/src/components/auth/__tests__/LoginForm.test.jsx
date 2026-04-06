@@ -1,9 +1,8 @@
-import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import LoginForm from '../LoginForm';
 import { AuthContext } from '../../../context/AuthContext';
+import LoginForm from '../LoginForm';
 
 const navigateMock = vi.fn();
 

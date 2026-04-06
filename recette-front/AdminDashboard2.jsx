@@ -1,13 +1,13 @@
-import { useState, useEffect, useContext, useCallback } from 'react';
+import { Menu } from 'lucide-react';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AnalyticsColumn from '../components/admin/AnalyticsColumn';
+import RecipeManagementColumn from '../components/admin/RecipeManagementColumn';
+import StatsOverview from '../components/admin/StatsOverview';
+import UserManagementColumn from '../components/admin/UserManagementColumn';
+import Loading from '../components/common/Loading';
 import { AuthContext } from '../context/AuthContext';
 import { adminService } from '../services/adminService';
-import { useNavigate } from 'react-router-dom';
-import { Menu } from 'lucide-react';
-import Loading from '../components/common/Loading';
-import UserManagementColumn from '../components/admin/UserManagementColumn';
-import RecipeManagementColumn from '../components/admin/RecipeManagementColumn';
-import AnalyticsColumn from '../components/admin/AnalyticsColumn';
-import StatsOverview from '../components/admin/StatsOverview';
 
 const AdminDashboard = () => {
   const { currentUser, loading: authLoading } = useContext(AuthContext);

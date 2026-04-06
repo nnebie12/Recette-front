@@ -1,8 +1,7 @@
-import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import Favorites from '../Favorites';
 import { AuthContext } from '../../context/AuthContext';
+import Favorites from '../Favorites';
 
 vi.mock('../../services/favoriteService', () => ({
   favoriteService: {

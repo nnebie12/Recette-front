@@ -1,8 +1,7 @@
-import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import ProfilePage from '../Profile';
 import { AuthContext } from '../../context/AuthContext';
+import ProfilePage from '../Profile';
 
 vi.mock('../../services/recipeService', () => ({
   recipeService: {

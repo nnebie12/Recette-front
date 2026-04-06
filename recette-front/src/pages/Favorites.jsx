@@ -1,8 +1,8 @@
-import { useState, useEffect, useContext, useCallback } from 'react';
 import { Heart } from 'lucide-react';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import RecipeList from '../components/recipe/RecipeList';
 import { AuthContext } from '../context/AuthContext';
 import { favoriteService } from '../services/favoriteService';
-import RecipeList from '../components/recipe/RecipeList';
 
 const Favorites = () => {
   const { currentUser } = useContext(AuthContext);

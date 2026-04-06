@@ -1,10 +1,10 @@
 import { Calendar, Download, Eye, Filter, Sparkles, Trash2, TrendingUp, User } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { useToast } from '../../context/ToastContext';
 import Button from '../common/Button';
 import Card from '../common/Card';
 import ConfirmationModal from '../common/ConfirmationModal';
 import Loading from '../common/Loading';
-import { useToast } from '../../context/ToastContext';
 
 const RECOMMENDATION_TYPES = {
   PERSONNALISEE: {
