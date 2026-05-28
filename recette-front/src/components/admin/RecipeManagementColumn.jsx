@@ -2,11 +2,10 @@ import React from 'react';
 import { ChefHat, Users, Star } from 'lucide-react';
 import Column from './Column';
 import TaskCard from './TaskCard';
+import { isAdminRole } from '../../utils/helpers';
 
 const RecipeManagementColumn = ({ users }) => {
-  const adminUsers = users.filter(u => 
-    u.role === 'ADMIN' || u.role === 'ADMINISTRATEUR'
-  );
+  const adminUsers = users.filter((u) => isAdminRole(u.role));
 
   return (
     <Column title="Administrateurs" color="text-red-500" count={adminUsers.length}>

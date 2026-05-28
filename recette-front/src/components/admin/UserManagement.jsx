@@ -1,28 +1,25 @@
-import React, { useState, useEffect } from 'react';
 import { Edit, Trash2 } from 'lucide-react';
-import Loading from '../common/Loading';
+import { useCallback, useEffect, useState } from 'react';
+import { useToast } from '../../context/ToastContext';
 import Button from '../common/Button';
-import ConfirmationModal from '../common/ConfirmationModal'; 
-import UserEditModal from './UserEditModal';
+import Loading from '../common/Loading';
+import UserManagementModals from './UserManagementModals';
+import { isAdminRole } from '../../utils/helpers';
 
 const UserManagement = ({ adminService }) => {
+  const toast = useToast();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userToEdit, setUserToEdit] = useState(null);
   const [userToDelete, setUserToDelete] = useState(null);
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await adminService.getAllUsers();
-      console.log('Données reçues:', data); // Debug
-      
+
       // Vérifier si data est un tableau, sinon essayer d'extraire le tableau
       if (Array.isArray(data)) {
         setUsers(data);
@@ -44,16 +41,21 @@ const UserManagement = ({ adminService }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [adminService]);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   const handleUpdateUser = async (id, updatedData) => {
     try {
       await adminService.updateUser(id, updatedData);
       await loadUsers(); // Recharger après modification
       setUserToEdit(null); 
+      toast.success('Utilisateur mis à jour avec succès.');
     } catch (err) {
       console.error("Erreur lors de la mise à jour:", err);
-      alert("Erreur lors de la mise à jour de l'utilisateur.");
+      toast.error("Erreur lors de la mise à jour de l'utilisateur.");
     }
   };
 
@@ -64,9 +66,10 @@ const UserManagement = ({ adminService }) => {
       await adminService.deleteUser(userToDelete.id);
       await loadUsers(); // Recharger après suppression
       setUserToDelete(null); 
+      toast.success('Utilisateur supprimé avec succès.');
     } catch (err) {
       console.error("Erreur lors de la suppression:", err);
-      alert("Erreur lors de la suppression de l'utilisateur.");
+      toast.error("Erreur lors de la suppression de l'utilisateur.");
     }
   };
 
@@ -122,7 +125,7 @@ const UserManagement = ({ adminService }) => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.role === 'ADMIN' || user.role === 'ADMINISTRATEUR' 
+                      isAdminRole(user.role)
                         ? 'bg-red-100 text-red-800' 
                         : 'bg-green-100 text-green-800'
                     }`}>
@@ -156,21 +159,15 @@ const UserManagement = ({ adminService }) => {
         </div>
       )}
 
-      <UserEditModal
-        isOpen={!!userToEdit}
-        onClose={() => setUserToEdit(null)}
-        user={userToEdit}
+      <UserManagementModals
+        userToEdit={userToEdit}
+        setUserToEdit={setUserToEdit}
+        userToDelete={userToDelete}
+        setUserToDelete={setUserToDelete}
         onUpdate={handleUpdateUser}
-      />
-      
-      <ConfirmationModal
-        isOpen={!!userToDelete}
-        onClose={() => setUserToDelete(null)}
-        onConfirm={handleDeleteUser}
-        title="Supprimer un utilisateur"
-        message={`Êtes-vous sûr de vouloir supprimer l'utilisateur ${userToDelete?.nom} ${userToDelete?.prenom} (ID: ${userToDelete?.id}) ? Cette action est irréversible.`}
+        onConfirmDelete={handleDeleteUser}
+        deleteMessage={`Êtes-vous sûr de vouloir supprimer l'utilisateur ${userToDelete?.nom} ${userToDelete?.prenom} (ID: ${userToDelete?.id}) ? Cette action est irréversible.`}
         confirmText="Supprimer définitivement"
-        confirmVariant="danger"
       />
     </div>
   );

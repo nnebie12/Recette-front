@@ -1,5 +1,6 @@
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { STORAGE_KEYS } from './constants';
 
 // Format date
 export const formatDate = (date) => {
@@ -69,6 +70,22 @@ export const isValidEmail = (email) => {
 // Validate password (min 6 characters)
 export const isValidPassword = (password) => {
   return password && password.length >= 6;
+};
+
+// Normalize user role for reliable comparisons
+export const normalizeRole = (role) => {
+  return typeof role === 'string' ? role.trim().toUpperCase() : '';
+};
+
+// Check whether a role is allowed for admin actions
+export const isAdminRole = (role) => {
+  const normalizedRole = normalizeRole(role);
+  return normalizedRole === 'ADMIN' || normalizedRole === 'ADMINISTRATEUR';
+};
+
+// Check if an auth token is stored
+export const hasStoredToken = () => {
+  return !!localStorage.getItem(STORAGE_KEYS.TOKEN);
 };
 
 // Get current season

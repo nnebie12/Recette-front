@@ -2,10 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Modal from '../common/Modal';
-import Input from '../common/Input';
 import Button from '../common/Button';
-import ImageUpload from '../common/ImageUpload'; // 👈 IMPORT
-import { DIFFICULTY_LEVELS } from '../../utils/constants';
+import RecipeFormFields from './RecipeFormFields';
 
 const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
   const [form, setForm] = useState({
@@ -38,34 +36,6 @@ const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
     }
   }, [recipe, isOpen]);
 
-  const handleChange = (e, index, field) => {
-    if (field === 'ingredients') {
-      const updatedIngredients = [...form.ingredients];
-      updatedIngredients[index][e.target.name] = e.target.value;
-      setForm({ ...form, ingredients: updatedIngredients });
-    } else {
-      setForm({ ...form, [e.target.name]: e.target.value });
-    }
-  };
-
-  // 👇 NOUVEAU: Handler pour l'image
-  const handleImageChange = (file, preview) => {
-    setForm({ 
-      ...form, 
-      imageFile: file,
-      imageUrl: preview 
-    });
-  };
-
-  const addIngredient = () => {
-    setForm({ ...form, ingredients: [...form.ingredients, { ingredientName: '', quantite: '' }] });
-  };
-
-  const removeIngredient = (index) => {
-    const updatedIngredients = form.ingredients.filter((_, i) => i !== index);
-    setForm({ ...form, ingredients: updatedIngredients });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -92,92 +62,7 @@ const RecipeEdit = ({ recipe, isOpen, onClose, onUpdate }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Modifier la recette" size="lg">
       <form className="space-y-4" onSubmit={handleSubmit}>
-        {/* Composant d'upload d'image */}
-        <ImageUpload
-          currentImage={form.imageUrl}
-          onImageChange={handleImageChange}
-          label="Image de la recette"
-          maxSize={5}
-        />
-
-        <Input
-          label="Titre"
-          name="titre"
-          value={form.titre}
-          onChange={handleChange}
-          required
-        />
-        
-        <Input
-          label="Description"
-          name="description"
-          type="textarea"
-          value={form.description}
-          onChange={handleChange}
-        />
-        
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            label="Temps de préparation (min)"
-            name="tempsPreparation"
-            type="number"
-            value={form.tempsPreparation}
-            onChange={handleChange}
-          />
-          <Input
-            label="Temps de cuisson (min)"
-            name="tempsCuisson"
-            type="number"
-            value={form.tempsCuisson}
-            onChange={handleChange}
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Difficulté</label>
-          <select
-            name="difficulte"
-            value={form.difficulte}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-          >
-            {Object.keys(DIFFICULTY_LEVELS).map((key) => (
-              <option key={key} value={key}>
-                {DIFFICULTY_LEVELS[key].label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Ingrédients</label>
-          {form.ingredients.map((ingredient, index) => (
-            <div key={index} className="flex space-x-2 mb-2">
-              <Input
-                placeholder="Nom"
-                name="ingredientName"
-                value={ingredient.ingredientName}
-                onChange={(e) => handleChange(e, index, 'ingredients')}
-                required
-              />
-              <Input
-                placeholder="Quantité"
-                name="quantite"
-                value={ingredient.quantite}
-                onChange={(e) => handleChange(e, index, 'ingredients')}
-                required
-              />
-              {form.ingredients.length > 1 && (
-                <Button type="button" variant="danger" onClick={() => removeIngredient(index)}>
-                  Supprimer
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button type="button" variant="secondary" onClick={addIngredient}>
-            Ajouter un ingrédient
-          </Button>
-        </div>
+        <RecipeFormFields form={form} setForm={setForm} />
 
         <div className="flex justify-end space-x-3 pt-4 border-t">
           <Button type="button" variant="secondary" onClick={onClose}>

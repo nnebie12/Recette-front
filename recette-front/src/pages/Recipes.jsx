@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { ChefHat, Filter, Search, X } from 'lucide-react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, ChefHat, Filter, X } from 'lucide-react';
-import { AuthContext } from '../context/AuthContext';
-import { recipeService } from '../services/recipeService';
-import { favoriteService } from '../services/favoriteService';
-import { searchHistoryService } from '../services/searchHistoryService';
-import RecipeList from '../components/recipe/RecipeList';
-import RecipeCreate from '../components/recipe/RecipeCreate';
 import Button from '../components/common/Button';
+import RecipeCreate from '../components/recipe/RecipeCreate';
+import RecipeList from '../components/recipe/RecipeList';
+import { AuthContext } from '../context/AuthContext';
+import { favoriteService } from '../services/favoriteService';
+import { recipeService } from '../services/recipeService';
+import { searchHistoryService } from '../services/searchHistoryService';
 
 const CATEGORIES = {
   cuisine: [
@@ -30,6 +30,43 @@ const CATEGORIES = {
   ]
 };
 
+const normalizeCategoryValue = (value) => (
+  (value || '')
+    .toString()
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+);
+
+const CATEGORY_ALIASES = {
+  cuisine: {
+    francaise: ['francaise', 'france', 'french'],
+    italienne: ['italienne', 'italie', 'italian'],
+    japonaise: ['japonaise', 'japon', 'japanese'],
+    mexicaine: ['mexicaine', 'mexique', 'mexican'],
+    thailandaise: ['thailandaise', 'thai', 'thailande'],
+    americaine: ['americaine', 'amerique', 'american', 'usa'],
+  },
+  type: {
+    entree: ['entree', 'entrees', 'starter', 'appetizer'],
+    plat: ['plat', 'plats', 'main', 'principal'],
+    dessert: ['dessert', 'desserts', 'sweet'],
+  },
+};
+
+const toCanonicalCategory = (kind, value) => {
+  const normalizedValue = normalizeCategoryValue(value);
+  if (!normalizedValue) return '';
+
+  const aliases = CATEGORY_ALIASES[kind] || {};
+  const matchedEntry = Object.entries(aliases).find(([, variants]) => (
+    variants.includes(normalizedValue)
+  ));
+
+  return matchedEntry?.[0] || normalizedValue;
+};
+
 const Recipes = () => {
   const { currentUser, loading: authLoading } = useContext(AuthContext);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -49,20 +86,7 @@ const Recipes = () => {
   const [maxTime, setMaxTime] = useState('');
   const [sortBy, setSortBy] = useState('date_desc');
 
-  useEffect(() => {
-    loadRecipes();
-    if (currentUser && currentUser.id) loadFavorites();
-  }, [currentUser]);
-
-  useEffect(() => applyFilters(), [recipes, searchTerm, selectedCuisine, selectedType, selectedDifficulty, isVegetarian, maxTime, sortBy]);
-
-  useEffect(() => {
-    setSelectedCuisine(searchParams.get('cuisine') || '');
-    setSelectedType(searchParams.get('type') || '');
-    setIsVegetarian(searchParams.get('diet') === 'vegetarien');
-  }, [searchParams]);
-
-  const loadRecipes = async () => {
+  const loadRecipes = useCallback(async () => {
     setLoading(true);
     try {
       const data = await recipeService.getAllRecipes();
@@ -70,47 +94,64 @@ const Recipes = () => {
     } catch (error) {
       console.error(error);
     } finally { setLoading(false); }
-  };
+  }, []);
 
-  const loadFavorites = async () => {
+  const loadFavorites = useCallback(async () => {
+    if (!currentUser?.id) return;
+
     try {
       const data = await favoriteService.getUserFavorites(currentUser.id);
       setFavorites(data);
     } catch (error) {
       console.error(error);
     }
-  };
+  }, [currentUser?.id]);
+
+  const sortRecipes = useCallback((recipesToSort, sortOption) => {
+    const sorted = [...recipesToSort];
+    switch (sortOption) {
+      case 'date_desc': return sorted.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation));
+      case 'date_asc': return sorted.sort((a, b) => new Date(a.dateCreation) - new Date(b.dateCreation));
+      case 'time_asc': return sorted.sort((a, b) => ((a.tempsPreparation || 0) + (a.tempsCuisson || 0)) - ((b.tempsPreparation || 0) + (b.tempsCuisson || 0)));
+      case 'time_desc': return sorted.sort((a, b) => ((b.tempsPreparation || 0) + (b.tempsCuisson || 0)) - ((a.tempsPreparation || 0) + (a.tempsCuisson || 0)));
+      default: return sorted;
+    }
+  }, []);
+
+  const applyFilters = useCallback(() => {
+    let filtered = [...recipes];
+    if (searchTerm) filtered = filtered.filter(r => r.titre?.toLowerCase().includes(searchTerm.toLowerCase()) || r.description?.toLowerCase().includes(searchTerm.toLowerCase()));
+    if (selectedCuisine) filtered = filtered.filter(r => toCanonicalCategory('cuisine', r.cuisine) === toCanonicalCategory('cuisine', selectedCuisine));
+    if (selectedType) filtered = filtered.filter(r => toCanonicalCategory('type', r.typeRecette) === toCanonicalCategory('type', selectedType));
+    if (selectedDifficulty) filtered = filtered.filter(r => r.difficulte === selectedDifficulty);
+    if (isVegetarian) filtered = filtered.filter(r => r.vegetarien === true);
+    if (maxTime) {
+      const maxMinutes = parseInt(maxTime, 10);
+      filtered = filtered.filter(r => (r.tempsPreparation || 0) + (r.tempsCuisson || 0) <= maxMinutes);
+    }
+    setFilteredRecipes(sortRecipes(filtered, sortBy));
+  }, [recipes, searchTerm, selectedCuisine, selectedType, selectedDifficulty, isVegetarian, maxTime, sortBy, sortRecipes]);
+
+  useEffect(() => {
+    loadRecipes();
+    if (currentUser?.id) loadFavorites();
+  }, [currentUser?.id, loadRecipes, loadFavorites]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
+
+  useEffect(() => {
+    setSelectedCuisine(searchParams.get('cuisine') || '');
+    setSelectedType(searchParams.get('type') || '');
+    setIsVegetarian(searchParams.get('diet') === 'vegetarien');
+  }, [searchParams]);
 
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
     if (currentUser && searchTerm?.trim()) {
       try { await searchHistoryService.recordSearch(currentUser.id, searchTerm, []); } 
       catch (error) { console.error(error); }
-    }
-  };
-
-  const applyFilters = () => {
-    let filtered = [...recipes];
-    if (searchTerm) filtered = filtered.filter(r => r.titre?.toLowerCase().includes(searchTerm.toLowerCase()) || r.description?.toLowerCase().includes(searchTerm.toLowerCase()));
-    if (selectedCuisine) filtered = filtered.filter(r => r.cuisine?.toLowerCase() === selectedCuisine.toLowerCase());
-    if (selectedType) filtered = filtered.filter(r => r.typeRecette?.toLowerCase() === selectedType.toLowerCase());
-    if (selectedDifficulty) filtered = filtered.filter(r => r.difficulte === selectedDifficulty);
-    if (isVegetarian) filtered = filtered.filter(r => r.vegetarien === true);
-    if (maxTime) {
-      const maxMinutes = parseInt(maxTime);
-      filtered = filtered.filter(r => (r.tempsPreparation || 0) + (r.tempsCuisson || 0) <= maxMinutes);
-    }
-    setFilteredRecipes(sortRecipes(filtered, sortBy));
-  };
-
-  const sortRecipes = (recipesToSort, sortOption) => {
-    const sorted = [...recipesToSort];
-    switch (sortOption) {
-      case 'date_desc': return sorted.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation));
-      case 'date_asc': return sorted.sort((a, b) => new Date(a.dateCreation) - new Date(b.dateCreation));
-      case 'time_asc': return sorted.sort((a, b) => ((a.tempsPreparation||0)+(a.tempsCuisson||0)) - ((b.tempsPreparation||0)+(b.tempsCuisson||0)));
-      case 'time_desc': return sorted.sort((a, b) => ((b.tempsPreparation||0)+(b.tempsCuisson||0)) - ((a.tempsPreparation||0)+(a.tempsCuisson||0)));
-      default: return sorted;
     }
   };
 

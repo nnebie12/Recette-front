@@ -1,70 +1,39 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Star } from 'lucide-react';
-import Button from '../common/Button';
 
-const RatingForm = ({ onSubmit }) => {
-  const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(0);
-  const [loading, setLoading] = useState(false);
+const RatingDisplay = ({ value = 0, total = 0, size = 'md', showCount = true }) => {
+  const normalizedValue = Number.isFinite(Number(value)) ? Number(value) : 0;
+  const roundedValue = Math.max(0, Math.min(5, normalizedValue));
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (rating === 0) return;
-
-    setLoading(true);
-    try {
-      await onSubmit({ valeur: rating });
-      setRating(0);
-    } catch (error) {
-      console.error('Error submitting rating:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const starSizeClass = size === 'sm' ? 'w-4 h-4' : size === 'lg' ? 'w-6 h-6' : 'w-5 h-5';
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <span className="text-gray-700 font-medium">Votre note :</span>
-        <div className="flex space-x-1">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              type="button"
-              onClick={() => setRating(star)}
-              onMouseEnter={() => setHover(star)}
-              onMouseLeave={() => setHover(0)}
-              className="focus:outline-none transition-transform hover:scale-110"
-            >
-              <Star
-                className={`w-8 h-8 ${
-                  star <= (hover || rating)
-                    ? 'fill-yellow-400 text-yellow-400'
-                    : 'text-gray-300'
-                }`}
-              />
-            </button>
-          ))}
-        </div>
-        {rating > 0 && (
-          <span className="text-gray-600 ml-2">
-            {rating} / 5
-          </span>
-        )}
+    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((star) => {
+          const filled = roundedValue >= star;
+          const halfFilled = !filled && roundedValue >= star - 0.5;
+
+          return (
+            <span key={star} className="relative inline-flex">
+              <Star className={`${starSizeClass} text-gray-300`} />
+              {(filled || halfFilled) && (
+                <span
+                  className="absolute left-0 top-0 overflow-hidden"
+                  style={{ width: filled ? '100%' : '50%' }}
+                >
+                  <Star className={`${starSizeClass} fill-yellow-400 text-yellow-400`} />
+                </span>
+              )}
+            </span>
+          );
+        })}
       </div>
 
-      <div className="flex justify-end">
-        <Button
-          type="submit"
-          variant="primary"
-          loading={loading}
-          disabled={rating === 0}
-        >
-          Soumettre la note
-        </Button>
-      </div>
-    </form>
+      <span className="text-sm font-semibold text-gray-700">{roundedValue.toFixed(1)} / 5</span>
+      {showCount && <span className="text-sm text-gray-500">({total} avis)</span>}
+    </div>
   );
 };
 
-export default RatingForm;
+export default RatingDisplay;

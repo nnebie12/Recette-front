@@ -1,21 +1,17 @@
-import { useState, useEffect, useContext } from 'react';
 import { Heart } from 'lucide-react';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import RecipeList from '../components/recipe/RecipeList';
 import { AuthContext } from '../context/AuthContext';
 import { favoriteService } from '../services/favoriteService';
-import RecipeList from '../components/recipe/RecipeList';
 
 const Favorites = () => {
   const { currentUser } = useContext(AuthContext);
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (currentUser) {
-      loadFavorites();
-    }
-  }, [currentUser]);
+  const loadFavorites = useCallback(async () => {
+    if (!currentUser?.id) return;
 
-  const loadFavorites = async () => {
     setLoading(true);
     try {
       const data = await favoriteService.getUserFavorites(currentUser.id);
@@ -25,7 +21,13 @@ const Favorites = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    if (currentUser?.id) {
+      loadFavorites();
+    }
+  }, [currentUser?.id, loadFavorites]);
 
   const handleToggleFavorite = async (recipeId) => {
     try {

@@ -1,13 +1,13 @@
-import { useState, useEffect, useContext } from 'react';
+import { Menu } from 'lucide-react';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AnalyticsColumn from '../components/admin/AnalyticsColumn';
+import RecipeManagementColumn from '../components/admin/RecipeManagementColumn';
+import StatsOverview from '../components/admin/StatsOverview';
+import UserManagementColumn from '../components/admin/UserManagementColumn';
+import Loading from '../components/common/Loading';
 import { AuthContext } from '../context/AuthContext';
 import { adminService } from '../services/adminService';
-import { useNavigate } from 'react-router-dom';
-import { Menu } from 'lucide-react';
-import Loading from '../components/common/Loading';
-import UserManagementColumn from '../components/admin/UserManagementColumn';
-import RecipeManagementColumn from '../components/admin/RecipeManagementColumn';
-import AnalyticsColumn from '../components/admin/AnalyticsColumn';
-import StatsOverview from '../components/admin/StatsOverview';
 
 const AdminDashboard = () => {
   const { currentUser, loading: authLoading } = useContext(AuthContext);
@@ -23,34 +23,7 @@ const AdminDashboard = () => {
     avgRating: 0
   });
 
-  useEffect(() => {
-    if (!authLoading) {
-      const isAdmin = currentUser?.role && 
-        (currentUser.role.toUpperCase() === 'ADMIN' || 
-         currentUser.role.toUpperCase() === 'ADMINISTRATEUR');
-
-      if (!currentUser || !isAdmin) {
-        navigate('/');
-      } else {
-        loadAllData();
-      }
-    }
-  }, [currentUser, authLoading, navigate]);
-
-  const loadAllData = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      await loadUsers();
-    } catch (err) {
-      console.error('Error loading data:', err);
-      setError('Erreur lors du chargement des données');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       const data = await adminService.getAllUsers();
       const usersArray = Array.isArray(data) ? data : [];
@@ -66,7 +39,34 @@ const AdminDashboard = () => {
       console.error('Error loading users:', err);
       setUsers([]);
     }
-  };
+  }, []);
+
+  const loadAllData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await loadUsers();
+    } catch (err) {
+      console.error('Error loading data:', err);
+      setError('Erreur lors du chargement des données');
+    } finally {
+      setLoading(false);
+    }
+  }, [loadUsers]);
+
+  useEffect(() => {
+    if (!authLoading) {
+      const isAdmin = currentUser?.role && 
+        (currentUser.role.toUpperCase() === 'ADMIN' || 
+         currentUser.role.toUpperCase() === 'ADMINISTRATEUR');
+
+      if (!currentUser || !isAdmin) {
+        navigate('/');
+      } else {
+        loadAllData();
+      }
+    }
+  }, [currentUser, authLoading, navigate, loadAllData]);
 
   if (authLoading || loading) {
     return <Loading fullScreen message="Chargement du tableau de bord..." />;

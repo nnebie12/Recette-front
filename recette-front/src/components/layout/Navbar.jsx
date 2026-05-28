@@ -2,7 +2,7 @@ import {
   BookOpen, ChefHat, ChevronDown, Clock, Heart, Home,
   LogOut, Menu, TrendingUp, User, X,
 } from 'lucide-react';
-import { useContext, useState } from 'react';
+import { createElement, useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -12,6 +12,8 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [recipesMenuOpen, setRecipesMenuOpen] = useState(false);
+
+  const mobileNavClassName = 'flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg';
 
   const handleLogout = () => {
     logout();
@@ -185,38 +187,42 @@ const Navbar = () => {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
             <div className="space-y-2">
-              <Link
-                to="/"
-                className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Home className="w-5 h-5" /><span>Accueil</span>
-              </Link>
-              <Link
-                to="/recipes"
-                className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <BookOpen className="w-5 h-5" /><span>Recettes</span>
-              </Link>
+              {[
+                { to: '/', icon: Home, label: 'Accueil' },
+                { to: '/recipes', icon: BookOpen, label: 'Recettes' },
+              ].map(({ to, icon, label }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className={mobileNavClassName}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {createElement(icon, { className: 'w-5 h-5' })}
+                  <span>{label}</span>
+                </Link>
+              ))}
 
               {currentUser && (
                 <>
-                  <Link to="/favorites" className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                    <Heart className="w-5 h-5" /><span>Favoris</span>
-                  </Link>
-                  <Link to="/recommendations" className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                    <TrendingUp className="w-5 h-5" /><span>Recommandations</span>
-                  </Link>
-                  <Link to="/search-history" className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                    <Clock className="w-5 h-5" /><span>Historique</span>
-                  </Link>
-                  <Link to="/profile" className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                    <User className="w-5 h-5" /><span>Mon Profil</span>
-                  </Link>
+                  {[
+                    { to: '/favorites', icon: Heart, label: 'Favoris' },
+                    { to: '/recommendations', icon: TrendingUp, label: 'Recommandations' },
+                    { to: '/search-history', icon: Clock, label: 'Historique' },
+                    { to: '/profile', icon: User, label: 'Mon Profil' },
+                  ].map(({ to, icon, label }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      className={mobileNavClassName}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {createElement(icon, { className: 'w-5 h-5' })}
+                      <span>{label}</span>
+                    </Link>
+                  ))}
                   <button
                     onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
-                    className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+                    className={`w-full ${mobileNavClassName}`}
                   >
                     <LogOut className="w-5 h-5" /><span>Déconnexion</span>
                   </button>

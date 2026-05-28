@@ -26,8 +26,9 @@ Application web moderne de gestion de recettes avec recommandations personnalis�
 
 ## 🛠️ Technologies
 
-- **Frontend**: React 18
-- **Routing**: React Router v6
+- **Frontend**: React 19
+- **Build tool**: Vite 7
+- **Routing**: React Router 7
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
 - **HTTP Client**: Axios
@@ -36,8 +37,8 @@ Application web moderne de gestion de recettes avec recommandations personnalis�
 ## 📦 Installation
 
 ### Prérequis
-- Node.js >= 14
-- npm ou yarn
+- Node.js >= 18
+- npm
 - Backend API en cours d'exécution sur `http://localhost:8080`
 
 ### Installation des dépendances
@@ -51,16 +52,23 @@ npm install
 Créez un fichier `.env` à la racine du projet:
 
 ```env
-REACT_APP_API_URL=http://localhost:8080/api
+VITE_API_URL=http://localhost:8080/api
 ```
+
+Fichiers d'environnement fournis:
+
+- `.env.development` pour le développement local
+- `.env.test` pour l'exécution des tests
+- `.env.production` pour le build de production
+- `.env.example` comme modèle minimal
 
 ### Lancement en développement
 
 ```bash
-npm start
+npm run dev
 ```
 
-L'application sera accessible sur `http://localhost:3000`
+L'application sera accessible sur `http://localhost:5173`
 
 ### Build de production
 
@@ -85,7 +93,7 @@ src/
 ├── context/            # Context React (Auth)
 ├── utils/              # Utilitaires et helpers
 ├── App.jsx             # Composant principal
-└── index.js            # Point d'entrée
+└── main.jsx            # Point d'entrée
 ```
 
 ## 🔌 API Endpoints utilisés
@@ -151,10 +159,12 @@ L'application est entièrement responsive avec des breakpoints:
 ## 🧪 Scripts disponibles
 
 ```bash
-npm start          # Développement
-npm run build      # Production
-npm test           # Tests
-npm run eject      # Eject de Create React App
+npm run dev        # Développement
+npm run build      # Build de production
+npm run lint       # Vérification ESLint
+npm run test       # Tests en mode watch
+npm run test:run   # Exécution unique des tests
+npm run preview    # Prévisualisation du build
 ```
 
 ## 🐛 Dépannage

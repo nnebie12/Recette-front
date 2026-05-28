@@ -1,7 +1,11 @@
-import { Sparkles, Leaf, Clock, TrendingUp, Zap } from 'lucide-react';
+import { Clock, Leaf, Sparkles, TrendingUp, Zap } from 'lucide-react';
 
 // API Configuration
-export const API_BASE_URL = 'http://localhost:8080/api';
+const DEFAULT_API_BASE_URL = 'http://localhost:8080/api';
+
+export const API_BASE_URL = (
+  import.meta.env.VITE_API_URL || DEFAULT_API_BASE_URL
+).replace(/\/+$/, '');
 
 // Routes
 export const ROUTES = {
