@@ -14,6 +14,7 @@ import AnalyticsColumn from '../components/admin/AnalyticsColumn';
 import UserManagementColumn from '../components/admin/UserManagementColumn';
 import RecipeManagementColumn from '../components/admin/RecipeManagementColumn';
 import StatsOverview from '../components/admin/StatsOverview';
+import { isAdminRole } from '../utils/helpers';
 
 const AdminDashboard = () => {
   const { currentUser, loading: authLoading } = useContext(AuthContext);
@@ -142,9 +143,7 @@ const AdminDashboard = () => {
       return;
     }
 
-    const isAdmin = currentUser?.role && 
-      (currentUser.role.toUpperCase() === 'ADMIN' || 
-       currentUser.role.toUpperCase() === 'ADMINISTRATEUR');
+    const isAdmin = isAdminRole(currentUser?.role);
        
     if (!isAdmin) {
       navigate('/');

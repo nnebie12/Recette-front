@@ -30,6 +30,43 @@ const CATEGORIES = {
   ]
 };
 
+const normalizeCategoryValue = (value) => (
+  (value || '')
+    .toString()
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+);
+
+const CATEGORY_ALIASES = {
+  cuisine: {
+    francaise: ['francaise', 'france', 'french'],
+    italienne: ['italienne', 'italie', 'italian'],
+    japonaise: ['japonaise', 'japon', 'japanese'],
+    mexicaine: ['mexicaine', 'mexique', 'mexican'],
+    thailandaise: ['thailandaise', 'thai', 'thailande'],
+    americaine: ['americaine', 'amerique', 'american', 'usa'],
+  },
+  type: {
+    entree: ['entree', 'entrees', 'starter', 'appetizer'],
+    plat: ['plat', 'plats', 'main', 'principal'],
+    dessert: ['dessert', 'desserts', 'sweet'],
+  },
+};
+
+const toCanonicalCategory = (kind, value) => {
+  const normalizedValue = normalizeCategoryValue(value);
+  if (!normalizedValue) return '';
+
+  const aliases = CATEGORY_ALIASES[kind] || {};
+  const matchedEntry = Object.entries(aliases).find(([, variants]) => (
+    variants.includes(normalizedValue)
+  ));
+
+  return matchedEntry?.[0] || normalizedValue;
+};
+
 const Recipes = () => {
   const { currentUser, loading: authLoading } = useContext(AuthContext);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -84,8 +121,8 @@ const Recipes = () => {
   const applyFilters = useCallback(() => {
     let filtered = [...recipes];
     if (searchTerm) filtered = filtered.filter(r => r.titre?.toLowerCase().includes(searchTerm.toLowerCase()) || r.description?.toLowerCase().includes(searchTerm.toLowerCase()));
-    if (selectedCuisine) filtered = filtered.filter(r => r.cuisine?.toLowerCase() === selectedCuisine.toLowerCase());
-    if (selectedType) filtered = filtered.filter(r => r.typeRecette?.toLowerCase() === selectedType.toLowerCase());
+    if (selectedCuisine) filtered = filtered.filter(r => toCanonicalCategory('cuisine', r.cuisine) === toCanonicalCategory('cuisine', selectedCuisine));
+    if (selectedType) filtered = filtered.filter(r => toCanonicalCategory('type', r.typeRecette) === toCanonicalCategory('type', selectedType));
     if (selectedDifficulty) filtered = filtered.filter(r => r.difficulte === selectedDifficulty);
     if (isVegetarian) filtered = filtered.filter(r => r.vegetarien === true);
     if (maxTime) {

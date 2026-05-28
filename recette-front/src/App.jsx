@@ -22,15 +22,14 @@ import Recipes from './pages/Recipes';
 import RecommendationsPage from './pages/recommendationsPage.jsx';
 import RegisterPage from './pages/Register';
 import SearchHistoryPage from './pages/SearchHistoryPage';
+import { hasStoredToken, isAdminRole } from './utils/helpers';
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('auth_token');
-  return token ? children : <Navigate to="/login" />;
+  return hasStoredToken() ? children : <Navigate to="/login" />;
 };
 
 const AdminProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useContext(AuthContext);
-  const token = localStorage.getItem('auth_token');
 
   if (loading) {
     return (
@@ -38,10 +37,9 @@ const AdminProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!token) return <Navigate to="/login" replace />;
+  if (!hasStoredToken()) return <Navigate to="/login" replace />;
 
-  const role = currentUser?.role?.toUpperCase() || '';
-  const isAdmin = role === 'ADMIN' || role === 'ADMINISTRATEUR';
+  const isAdmin = isAdminRole(currentUser?.role);
 
   if (!currentUser || !isAdmin) {
     return <Navigate to="/" replace />;

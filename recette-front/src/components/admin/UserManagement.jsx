@@ -2,9 +2,9 @@ import { Edit, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '../../context/ToastContext';
 import Button from '../common/Button';
-import ConfirmationModal from '../common/ConfirmationModal';
 import Loading from '../common/Loading';
-import UserEditModal from './UserEditModal';
+import UserManagementModals from './UserManagementModals';
+import { isAdminRole } from '../../utils/helpers';
 
 const UserManagement = ({ adminService }) => {
   const toast = useToast();
@@ -125,7 +125,7 @@ const UserManagement = ({ adminService }) => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.role === 'ADMIN' || user.role === 'ADMINISTRATEUR' 
+                      isAdminRole(user.role)
                         ? 'bg-red-100 text-red-800' 
                         : 'bg-green-100 text-green-800'
                     }`}>
@@ -159,21 +159,15 @@ const UserManagement = ({ adminService }) => {
         </div>
       )}
 
-      <UserEditModal
-        isOpen={!!userToEdit}
-        onClose={() => setUserToEdit(null)}
-        user={userToEdit}
+      <UserManagementModals
+        userToEdit={userToEdit}
+        setUserToEdit={setUserToEdit}
+        userToDelete={userToDelete}
+        setUserToDelete={setUserToDelete}
         onUpdate={handleUpdateUser}
-      />
-      
-      <ConfirmationModal
-        isOpen={!!userToDelete}
-        onClose={() => setUserToDelete(null)}
-        onConfirm={handleDeleteUser}
-        title="Supprimer un utilisateur"
-        message={`Êtes-vous sûr de vouloir supprimer l'utilisateur ${userToDelete?.nom} ${userToDelete?.prenom} (ID: ${userToDelete?.id}) ? Cette action est irréversible.`}
+        onConfirmDelete={handleDeleteUser}
+        deleteMessage={`Êtes-vous sûr de vouloir supprimer l'utilisateur ${userToDelete?.nom} ${userToDelete?.prenom} (ID: ${userToDelete?.id}) ? Cette action est irréversible.`}
         confirmText="Supprimer définitivement"
-        confirmVariant="danger"
       />
     </div>
   );

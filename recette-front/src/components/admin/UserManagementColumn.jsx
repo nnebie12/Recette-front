@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Users, ChefHat, Star, Edit, Trash2 } from 'lucide-react';
 import { adminService } from '../../services/adminService';
-import UserEditModal from './UserEditModal';
-import ConfirmationModal from '../common/ConfirmationModal';
 import TaskCard from './TaskCard';
 import Column from './Column';
+import { isAdminRole } from '../../utils/helpers';
+import UserManagementModals from './UserManagementModals';
 
 const UserManagementColumn = ({ users, onReload }) => {
   const [userToEdit, setUserToEdit] = useState(null);
@@ -32,7 +32,7 @@ const UserManagementColumn = ({ users, onReload }) => {
     }
   };
 
-  const activeUsers = users.filter(u => u.role !== 'ADMIN' && u.role !== 'ADMINISTRATEUR');
+  const activeUsers = users.filter((u) => !isAdminRole(u.role));
 
   return (
     <>
@@ -59,21 +59,14 @@ const UserManagementColumn = ({ users, onReload }) => {
         )}
       </Column>
 
-      <UserEditModal
-        isOpen={!!userToEdit}
-        onClose={() => setUserToEdit(null)}
-        user={userToEdit}
+      <UserManagementModals
+        userToEdit={userToEdit}
+        setUserToEdit={setUserToEdit}
+        userToDelete={userToDelete}
+        setUserToDelete={setUserToDelete}
         onUpdate={handleUpdateUser}
-      />
-      
-      <ConfirmationModal
-        isOpen={!!userToDelete}
-        onClose={() => setUserToDelete(null)}
-        onConfirm={handleDeleteUser}
-        title="Supprimer un utilisateur"
-        message={`Êtes-vous sûr de vouloir supprimer l'utilisateur ${userToDelete?.nom} ${userToDelete?.prenom} ?`}
-        confirmText="Supprimer"
-        confirmVariant="danger"
+        onConfirmDelete={handleDeleteUser}
+        deleteMessage={`Êtes-vous sûr de vouloir supprimer l'utilisateur ${userToDelete?.nom} ${userToDelete?.prenom} ?`}
       />
     </>
   );

@@ -91,4 +91,21 @@ describe('Recipes page', () => {
       expect(searchHistoryService.recordSearch).toHaveBeenCalledWith(7, 'Pasta', []);
     });
   });
+
+  it('reconnait les variantes accentuées et plurielles des catégories backend', async () => {
+    recipeService.getAllRecipes.mockResolvedValue([
+      { id: 3, titre: 'Boeuf bourguignon', description: 'Classique', cuisine: 'Française', typeRecette: 'Plats', difficulte: 'MOYEN', vegetarien: false, dateCreation: '2026-04-03', tempsPreparation: 30, tempsCuisson: 90 },
+      { id: 4, titre: 'Mousse', description: 'Dessert', cuisine: 'Italienne', typeRecette: 'Desserts', difficulte: 'FACILE', vegetarien: true, dateCreation: '2026-04-04', tempsPreparation: 15, tempsCuisson: 0 },
+    ]);
+
+    renderPage('/recipes?cuisine=francaise&type=plat');
+
+    expect(await screen.findByRole('heading', { name: 'Cuisine Française' })).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText('Boeuf bourguignon')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Mousse')).not.toBeInTheDocument();
+  });
 });
