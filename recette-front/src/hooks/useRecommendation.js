@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { recommendationService } from '../services/recommendationService';
 
 const extractRecipeIdFromLink = (link) => {
