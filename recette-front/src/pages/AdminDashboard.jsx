@@ -212,7 +212,7 @@ const AdminDashboard = () => {
     );
   }
 
-  if (!currentUser || !currentUser.role?.toUpperCase().includes('ADMIN')) {
+  if (!currentUser || !isAdminRole(currentUser?.role)) {
     return null;
   }
 

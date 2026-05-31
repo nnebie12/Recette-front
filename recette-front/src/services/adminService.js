@@ -251,7 +251,7 @@ export const adminService = {
    * Supprime une recommandation
    */
   deleteRecommendation: async (recommendationId) => {
-    await apiService.delete(`/administrateur/recommandations/${recommendationId}`);
+    throw new Error("Suppression unitaire indisponible: utilisez la suppression par utilisateur");
   },
 
   /**

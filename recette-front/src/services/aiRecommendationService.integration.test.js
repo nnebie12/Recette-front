@@ -37,4 +37,61 @@ describe('AI recommendation service contracts', () => {
       aiRecommendationService.generatePersonalizedRecommendation(5, {}, {})
     ).rejects.toThrow('Echec recommandation personnalisee: Ressource non trouvée');
   });
+
+  it('utilise le endpoint backend pour la recommandation saisonniere', async () => {
+    const payload = { success: true };
+    mockPost.mockResolvedValue({ data: payload });
+
+    const result = await aiRecommendationService.generateSeasonalRecommendation(9, 'HIVER', { ingredients: ['carotte'] });
+
+    expect(mockPost).toHaveBeenCalledWith('/v1/recommandations/user/9/generer-saisonniere', {
+      saison: 'HIVER',
+      ingredients: ['carotte'],
+    });
+    expect(result).toEqual({ success: true, data: payload });
+  });
+
+  it('utilise le endpoint backend pour la recommandation habitudes', async () => {
+    const payload = { success: true };
+    mockPost.mockResolvedValue({ data: payload });
+
+    const result = await aiRecommendationService.generateHabitBasedRecommendation(
+      11,
+      { typeRecette: 'Vegan', tempsPreparation: 'Rapide', difficulte: 'Facile' },
+      { categories: ['plats'] }
+    );
+
+    expect(mockPost).toHaveBeenCalledWith('/v1/recommandations/user/11/generer-habitudes', {
+      typeRecette: 'Vegan',
+      tempsPreparation: 'Rapide',
+      difficulte: 'Facile',
+      categoriesPreferees: ['plats'],
+    });
+    expect(result).toEqual({ success: true, data: payload });
+  });
+
+  it('utilise le endpoint backend pour la recommandation creneau', async () => {
+    const payload = { success: true };
+    mockPost.mockResolvedValue({ data: payload });
+
+    const result = await aiRecommendationService.generateTimeslotRecommendation(13, 'DINER', { preferences: ['leger'] });
+
+    expect(mockPost).toHaveBeenCalledWith('/v1/recommandations/user/13/generer-creneau', {
+      creneau: 'DINER',
+      preferences: ['leger'],
+    });
+    expect(result).toEqual({ success: true, data: payload });
+  });
+
+  it('utilise le endpoint backend pour la recommandation engagement', async () => {
+    const payload = { success: true };
+    mockPost.mockResolvedValue({ data: payload });
+
+    const result = await aiRecommendationService.generateEngagementRecommendation(15, 72);
+
+    expect(mockPost).toHaveBeenCalledWith('/v1/recommandations/user/15/generer-engagement', {
+      engagementScore: 72,
+    });
+    expect(result).toEqual({ success: true, data: payload });
+  });
 });

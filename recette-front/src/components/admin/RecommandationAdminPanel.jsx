@@ -100,10 +100,10 @@ const RecommendationAdminPanel = ({ adminService }) => {
     if (!recToDelete) return;
 
     try {
-      await adminService.deleteRecommendation(recToDelete.id);
+      await adminService.deleteUserRecommendations(recToDelete.userId);
       await loadRecommendations();
       setRecToDelete(null);
-      toast.success('Recommandation supprimée avec succès.');
+      toast.success('Toutes les recommandations de cet utilisateur ont été supprimées.');
     } catch (err) {
       console.error('Erreur suppression:', err);
       toast.error('Erreur lors de la suppression de la recommandation.');
@@ -436,8 +436,8 @@ const RecommendationAdminPanel = ({ adminService }) => {
         isOpen={!!recToDelete}
         onClose={() => setRecToDelete(null)}
         onConfirm={handleDeleteRecommendation}
-        title="Supprimer la recommandation"
-        message={`Voulez-vous vraiment supprimer la recommandation #${recToDelete?.id} ? Cette action est irréversible.`}
+        title="Supprimer les recommandations utilisateur"
+        message={`Cette action supprimera toutes les recommandations de l'utilisateur #${recToDelete?.userId}. Continuer ?`}
         confirmText="Supprimer"
         confirmVariant="danger"
       />

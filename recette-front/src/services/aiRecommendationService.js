@@ -28,7 +28,7 @@ export const aiRecommendationService = {
    */
   generateSeasonalRecommendation: async (userId, season, userPreferences) => {
     try {
-      const response = await apiService.post(`/ai/recommendations/seasonal/${userId}`, {
+      const response = await apiService.post(`/v1/recommandations/user/${userId}/generer-saisonniere`, {
         saison: season || 'PRINTEMPS',
         ingredients: userPreferences?.ingredients || []
       });
@@ -48,7 +48,7 @@ export const aiRecommendationService = {
    */
   generateHabitBasedRecommendation: async (userId, habits, browsing) => {
     try {
-      const response = await apiService.post(`/ai/recommendations/habit-based/${userId}`, {
+      const response = await apiService.post(`/v1/recommandations/user/${userId}/generer-habitudes`, {
         typeRecette: habits?.typeRecette || 'Varié',
         tempsPreparation: habits?.tempsPreparation || 'Moyen',
         difficulte: habits?.difficulte || 'Intermédiaire',
@@ -70,7 +70,7 @@ export const aiRecommendationService = {
    */
   generateTimeslotRecommendation: async (userId, timeslot, userPreferences) => {
     try {
-      const response = await apiService.post(`/ai/recommendations/timeslot/${userId}`, {
+      const response = await apiService.post(`/v1/recommandations/user/${userId}/generer-creneau`, {
         creneau: timeslot || 'DEJEUNER',
         preferences: userPreferences?.preferences || []
       });
@@ -90,7 +90,7 @@ export const aiRecommendationService = {
    */
   generateEngagementRecommendation: async (userId, engagementScore) => {
     try {
-      const response = await apiService.post(`/ai/recommendations/engagement/${userId}`, {
+      const response = await apiService.post(`/v1/recommandations/user/${userId}/generer-engagement`, {
         engagementScore: engagementScore || 50
       });
 
