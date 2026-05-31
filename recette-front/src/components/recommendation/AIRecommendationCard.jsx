@@ -1,22 +1,20 @@
 // recette-front/src/components/recommendation/AIRecommendationCard.jsx
 
-import React, { useState } from 'react';
-import { 
-  TrendingUp, 
-  Sparkles, 
-  Clock, 
-  Leaf, 
-  Calendar,
-  Coffee,
-  Target,
-  ChevronDown,
-  ChevronUp,
-  CheckCircle,
-  ExternalLink
+import {
+    CheckCircle,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    ExternalLink,
+    Leaf,
+    Sparkles,
+    Target,
+    TrendingUp
 } from 'lucide-react';
-import Card from '../common/Card';
-import Button from '../common/Button';
+import { useState } from 'react';
 import { formatRelativeTime } from '../../utils/helpers';
+import Button from '../common/Button';
+import Card from '../common/Card';
 
 const AIRecommendationCard = ({ recommendation, onMarkAsUsed }) => {
   const [expanded, setExpanded] = useState(false);
@@ -180,7 +178,7 @@ const AIRecommendationCard = ({ recommendation, onMarkAsUsed }) => {
               variant="primary"
               size="sm"
               fullWidth
-              onClick={() => onMarkAsUsed(recommendation.id)}
+              onClick={() => onMarkAsUsed(recommendation)}
               icon={CheckCircle}
             >
               Marquer comme utilisé

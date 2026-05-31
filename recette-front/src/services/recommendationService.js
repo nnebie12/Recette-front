@@ -1,5 +1,19 @@
 import { apiService } from './api';
 
+const FEEDBACK_ACTION_MAP = {
+  like: 'like',
+  liked: 'like',
+  click: 'click',
+  clicked: 'click',
+  dismiss: 'dismiss',
+  dismissed: 'dismiss',
+};
+
+export const normalizeRecommendationAction = (action) => {
+  if (typeof action !== 'string') return 'click';
+  const normalized = action.trim().toLowerCase();
+  return FEEDBACK_ACTION_MAP[normalized] || 'click';
+};
 
 export const recommendationService = {
 
@@ -14,7 +28,7 @@ export const recommendationService = {
   },
 
   generatePersonalizedRecommendation: async (userId) => {
-    const response = await apiService.post(`/v1/recommandations/user/${userId}/generer-personnalisee`);
+    const response = await apiService.post(`/v1/recommendations/personalized/${userId}`);
     return response.data;
   },
 
@@ -45,6 +59,17 @@ export const recommendationService = {
 
   markRecommendationAsUsed: async (recommendationId) => {
     const response = await apiService.put(`/v1/recommandations/${recommendationId}/utilise`);
+    return response.data;
+  },
+
+  sendRecommendationFeedback: async ({ userId, recipeId, action }) => {
+    const payload = {
+      userId,
+      recipeId,
+      action: normalizeRecommendationAction(action),
+    };
+
+    const response = await apiService.post('/v1/recommendations/feedback', payload);
     return response.data;
   },
 

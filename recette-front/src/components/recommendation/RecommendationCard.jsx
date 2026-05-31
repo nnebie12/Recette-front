@@ -1,9 +1,8 @@
-import React from 'react';
-import { TrendingUp, Sparkles, Clock, Leaf } from 'lucide-react';
-import Card from '../common/Card';
-import Button from '../common/Button';
-import { formatRelativeTime } from '../../utils/helpers';
+import { TrendingUp } from 'lucide-react';
 import { TYPE_ICON_MAP } from '../../utils/constants';
+import { formatRelativeTime } from '../../utils/helpers';
+import Button from '../common/Button';
+import Card from '../common/Card';
 
 const RecommendationCard = ({ recommendation, onMarkAsUsed }) => {
      
@@ -76,7 +75,7 @@ const Icon = TYPE_ICON_MAP[recommendation.type] || TrendingUp;
           variant="outline"
           size="sm"
           fullWidth
-          onClick={() => onMarkAsUsed(recommendation.id)}
+          onClick={() => onMarkAsUsed(recommendation)}
         >
           Marquer comme utilisé
         </Button>

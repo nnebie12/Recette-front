@@ -55,9 +55,9 @@ const RecommendationsPage = () => {
     }
   };
 
-  const handleMarkAsUsed = async (recommendationId) => {
+  const handleMarkAsUsed = async (recommendation) => {
     try {
-      await markAsUsed(recommendationId);
+      await markAsUsed(recommendation);
     } catch (err) {
       console.error('Erreur marquage:', err);
     }

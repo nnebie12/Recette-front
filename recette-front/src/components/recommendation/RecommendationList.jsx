@@ -282,7 +282,7 @@ const RecommendationList = ({ recommendations, loading, onMarkAsUsed }) => {
                 variant="primary"
                 size="sm"
                 icon={Check}
-                onClick={() => onMarkAsUsed(recommendation.id)}
+                onClick={() => onMarkAsUsed(recommendation)}
                 fullWidth
               >
                 Marquer comme utilisée
