@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react';
+import { AlertCircle, BarChart, Loader2, RefreshCw, Settings, ShieldCheck, Sparkles, TrendingUp, Users } from 'lucide-react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AIQuickActions from '../components/admin/AIQuickActions';
+import AnalyticsColumn from '../components/admin/AnalyticsColumn';
+import AnalyticsPanel from '../components/admin/AnalyticsPanel';
+import RFMVisualizer from '../components/admin/RFMVisualizer';
+import RecipeAdminPanel from '../components/admin/RecipeAdminPanel';
+import RecipeManagementColumn from '../components/admin/RecipeManagementColumn';
+import RecommendationAdminPanel from '../components/admin/RecommandationAdminPanel';
+import StatsOverview from '../components/admin/StatsOverview';
+import UserManagement from '../components/admin/UserManagement';
+import UserManagementColumn from '../components/admin/UserManagementColumn';
+import { AuthContext } from '../context/AuthContext';
 import { adminService } from '../services/adminService';
 import { userBehaviorService } from '../services/userBehaviorService';
-import AIQuickActions from '../components/admin/AIQuickActions';
-import RFMVisualizer from '../components/admin/RFMVisualizer';
-import RecommendationAdminPanel from '../components/admin/RecommandationAdminPanel';
-import UserManagement from '../components/admin/UserManagement';
-import RecipeAdminPanel from '../components/admin/RecipeAdminPanel';
-import AnalyticsPanel from '../components/admin/AnalyticsPanel';
-import { Loader2, AlertCircle, RefreshCw, Users, ShieldCheck, TrendingUp, Activity, Sparkles, Settings, BarChart } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import AnalyticsColumn from '../components/admin/AnalyticsColumn';
-import UserManagementColumn from '../components/admin/UserManagementColumn';
-import RecipeManagementColumn from '../components/admin/RecipeManagementColumn';
-import StatsOverview from '../components/admin/StatsOverview';
 import { isAdminRole } from '../utils/helpers';
 
 const AdminDashboard = () => {
