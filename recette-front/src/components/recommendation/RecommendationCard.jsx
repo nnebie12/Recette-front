@@ -76,7 +76,7 @@ const Icon = TYPE_ICON_MAP[recommendation.type] || TrendingUp;
           variant="outline"
           size="sm"
           fullWidth
-          onClick={() => onMarkAsUsed(recommendation.id)}
+          onClick={() => onMarkAsUsed(recommendation)}
         >
           Marquer comme utilisé
         </Button>

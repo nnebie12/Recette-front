@@ -6,7 +6,7 @@ export const aiRecommendationService = {
    */
   generatePersonalizedRecommendation: async (userId, userBehavior, userPreferences) => {
     try {
-      const response = await apiService.post(`/ai/recommendations/personalized/${userId}`, {
+      const response = await apiService.post(`/v1/recommendations/personalized/${userId}`, {
         profil: userBehavior?.profil || 'NOUVEAU',
         scoreEngagement: userBehavior?.scoreEngagement || 0,
         categories: userPreferences?.categories || [],
@@ -19,11 +19,7 @@ export const aiRecommendationService = {
       };
     } catch (error) {
       console.error("Erreur lors de la génération de recommandation IA:", error);
-      return {
-        success: false,
-        error: error.message,
-        fallback: generateFallbackRecommendations()
-      };
+      throw new Error(`Echec recommandation personnalisee: ${error.message}`);
     }
   },
 
@@ -43,11 +39,7 @@ export const aiRecommendationService = {
       };
     } catch (error) {
       console.error("Erreur lors de la génération de recommandation saisonnière:", error);
-      return {
-        success: false,
-        error: error.message,
-        fallback: generateFallbackRecommendations()
-      };
+      throw new Error(`Echec recommandation saisonniere: ${error.message}`);
     }
   },
 
@@ -69,11 +61,7 @@ export const aiRecommendationService = {
       };
     } catch (error) {
       console.error("Erreur lors de la génération de recommandation par habitudes:", error);
-      return {
-        success: false,
-        error: error.message,
-        fallback: generateFallbackRecommendations()
-      };
+      throw new Error(`Echec recommandation habitudes: ${error.message}`);
     }
   },
 
@@ -93,11 +81,7 @@ export const aiRecommendationService = {
       };
     } catch (error) {
       console.error("Erreur lors de la génération de recommandation par créneau:", error);
-      return {
-        success: false,
-        error: error.message,
-        fallback: generateFallbackRecommendations()
-      };
+      throw new Error(`Echec recommandation creneau: ${error.message}`);
     }
   },
 
@@ -116,42 +100,7 @@ export const aiRecommendationService = {
       };
     } catch (error) {
       console.error("Erreur lors de la génération de recommandation d'engagement:", error);
-      return {
-        success: false,
-        error: error.message,
-        fallback: generateFallbackRecommendations()
-      };
+      throw new Error(`Echec recommandation engagement: ${error.message}`);
     }
   }
 };
-
-// ============= Recommandations de secours =============
-
-function generateFallbackRecommendations() {
-  return {
-    recommendations: [
-      {
-        titre: "Recettes Populaires",
-        description: "Découvrez nos recettes les plus appréciées par la communauté",
-        lien: "/recettes/populaires",
-        tags: ["populaire", "communauté", "favoris"],
-        raison: "Ces recettes plaisent à la majorité des utilisateurs"
-      },
-      {
-        titre: "Recettes Rapides",
-        description: "Des recettes délicieuses prêtes en moins de 30 minutes",
-        lien: "/recettes/rapides",
-        tags: ["rapide", "facile", "30min"],
-        raison: "Idéal pour les emplois du temps chargés"
-      },
-      {
-        titre: "Recettes de Saison",
-        description: "Profitez des ingrédients frais et de saison",
-        lien: "/recettes/saison",
-        tags: ["saison", "frais", "local"],
-        raison: "Les meilleurs ingrédients du moment"
-      }
-    ],
-    score: 50.0
-  };
-}

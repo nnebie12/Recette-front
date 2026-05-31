@@ -1,6 +1,18 @@
 import { useState, useCallback } from 'react';
 import { recommendationService } from '../services/recommendationService';
 
+const extractRecipeIdFromLink = (link) => {
+  if (!link || typeof link !== 'string') return null;
+  const match = link.match(/\/recettes?\/(\d+)/i);
+  return match ? Number(match[1]) : null;
+};
+
+const getPrimaryRecipeId = (recommendation) => {
+  const details = recommendation?.recommandation;
+  if (!Array.isArray(details) || details.length === 0) return null;
+  return extractRecipeIdFromLink(details[0]?.lien);
+};
+
 
 export const useRecommendations = (userId) => {
   const [loading, setLoading] = useState(false);
@@ -73,7 +85,7 @@ export const useRecommendations = (userId) => {
         case 'HABITUDES':
           result = await recommendationService.generateHabitBasedRecommendation(userId);
           break;
-        case 'CRENEAU':
+        case 'CRENEAU_ACTUEL':
           result = await recommendationService.generateTimeslotRecommendation(userId);
           break;
         case 'ENGAGEMENT':
@@ -81,10 +93,6 @@ export const useRecommendations = (userId) => {
           break;
         default:
           result = await recommendationService.generatePersonalizedRecommendation(userId);
-      }
-
-      if (!result.success) {
-        setError("La recommandation a été générée avec des données de secours");
       }
 
       // Recharger les recommandations après génération
@@ -103,9 +111,34 @@ export const useRecommendations = (userId) => {
   /**
    * Marque une recommandation comme utilisée
    */
-  const markAsUsed = useCallback(async (recommendationId) => {
+  const sendFeedback = useCallback(async ({ recommendation, recipeId, action }) => {
+    if (!userId) return;
+
+    const effectiveRecipeId = recipeId ?? getPrimaryRecipeId(recommendation);
+    if (!effectiveRecipeId) return;
+
     try {
+      await recommendationService.sendRecommendationFeedback({
+        userId,
+        recipeId: effectiveRecipeId,
+        action,
+      });
+    } catch (err) {
+      console.error('Erreur envoi feedback recommandation:', err);
+      setError('Le feedback recommandation n\'a pas pu être envoyé');
+      throw err;
+    }
+  }, [userId]);
+
+  const markAsUsed = useCallback(async (recommendation) => {
+    try {
+      const recommendationId = recommendation?.id;
+      if (!recommendationId) {
+        throw new Error('Identifiant de recommandation manquant');
+      }
+
       await recommendationService.markRecommendationAsUsed(recommendationId);
+      await sendFeedback({ recommendation, action: 'like' });
       
       // Mise à jour locale
       setRecommendations(prev => 
@@ -118,7 +151,7 @@ export const useRecommendations = (userId) => {
       setError("Impossible de marquer la recommandation comme utilisée");
       throw err;
     }
-  }, []);
+  }, [sendFeedback]);
 
   /**
    * Réinitialise l'état d'erreur
@@ -135,6 +168,7 @@ export const useRecommendations = (userId) => {
     loadRecommendationsByType,
     generateRecommendation,
     markAsUsed,
+    sendFeedback,
     clearError
   };
 };

@@ -180,7 +180,7 @@ const AIRecommendationCard = ({ recommendation, onMarkAsUsed }) => {
               variant="primary"
               size="sm"
               fullWidth
-              onClick={() => onMarkAsUsed(recommendation.id)}
+              onClick={() => onMarkAsUsed(recommendation)}
               icon={CheckCircle}
             >
               Marquer comme utilisé
