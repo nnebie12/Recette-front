@@ -83,11 +83,21 @@ export const adminService = {
    */
   getDashboardStats: async () => {
     try {
-      const [users, rfmStats, engagedUsers] = await Promise.all([
+      const [users, rfmStats, engagedUsers, contenuStats] = await Promise.all([
         apiService.get('/administrateur/users'),
         apiService.get('/v1/comportement-utilisateur/stats/rfm'),
         apiService.get('/v1/comportement-utilisateur/engaged', {
           params: { scoreMinimum: 50 }
+        }),
+        // ✅ AJOUT — remplace les valeurs codées en dur (totalComments: 0,
+        // avgRating: 4.6) par un vrai appel au nouvel endpoint backend
+        // qui agrège RecetteDetailsDocument (commentaires + notes réels).
+        // Le .catch() individuel évite que Promise.all rejette tout le
+        // groupe si cet endpoint précis échoue (ex: backend pas encore
+        // redémarré avec le patch) — dans ce cas, fallback silencieux à 0.
+        apiService.get('/administrateur/stats/contenu').catch((err) => {
+          console.warn('Stats contenu indisponibles, fallback à 0:', err.message);
+          return { data: { totalCommentaires: 0, noteMoyenneGlobale: 0 } };
         })
       ]);
 
@@ -96,8 +106,8 @@ export const adminService = {
       return {
         totalUsers: usersData.length,
         activeRecipes: usersData.reduce((acc, u) => acc + (u.recettesCount || 0), 0),
-        totalComments: 0, // À implémenter si disponible
-        avgRating: 4.6, // À calculer depuis les vraies données
+        totalComments: contenuStats.data?.totalCommentaires ?? 0,
+        avgRating: contenuStats.data?.noteMoyenneGlobale ?? 0,
         rfm: rfmStats.data || { champions: 0, fidele: 0, risque: 0, nouveau: 0 },
         engagedCount: engagedUsers.data?.length || 0
       };
