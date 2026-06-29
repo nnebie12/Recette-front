@@ -46,7 +46,8 @@ const BulkImageUpdater = () => {
     for (const recipe of recipes) {
       setCurrentRecipe(recipe.titre);
       try {
-        const imageUrl = getAutoImage(recipe);
+        // ✅ IMPORTANT : Ajouter 'await' car getAutoImage est maintenant async
+        const imageUrl = await getAutoImage(recipe);
 
         await recipeService.updateRecipe(recipe.id, {
           ...recipe,
@@ -54,7 +55,8 @@ const BulkImageUpdater = () => {
         });
 
         setResults((prev) => ({ ...prev, done: prev.done + 1 }));
-      } catch {
+      } catch (err) {
+        console.error(`Erreur pour ${recipe.titre}:`, err);
         setResults((prev) => ({ ...prev, errors: prev.errors + 1 }));
       }
 
@@ -83,7 +85,7 @@ const BulkImageUpdater = () => {
         <div>
           <h3 className="font-bold text-gray-900">Ajout automatique d'images</h3>
           <p className="text-sm text-gray-500">
-            Ajoute une image Unsplash aux recettes qui n'en ont pas
+            Ajoute une image TheMealDB aux recettes qui n'en ont pas
           </p>
         </div>
       </div>

@@ -41,7 +41,7 @@ const Home = () => {
               <ChefHat className="w-20 h-20" />
             </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6">
-              Bienvenue sur RecipeApp
+              Bienvenue sur Goumet Go
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-white/90">
               Découvrez, partagez et savourez des milliers de recettes

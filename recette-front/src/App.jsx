@@ -6,7 +6,9 @@ import Team from './components/about/Team';
 import Footer from './components/layout/Footer';
 import Navbar from './components/layout/Navbar';
 import LegalNotice from './components/legals/LegalNotice';
-import PrivacyPolicy from './components/legals/PrivacyPolicy';
+import PrivacyPolicy from './pages/PrivacyPolicy_RGPD';
+import GDPRPage from './pages/Gdprpage';
+import CookieConsentBanner from './components/cookies/CookieConsentBanner';
 import TermsOfService from './components/legals/TermsOfService';
 import { AuthContext } from './context/AuthContext';
 import { AuthProvider } from './context/AuthProvider';
@@ -68,6 +70,11 @@ function App() {
                 {/* Routes légales */}
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/gdpr-info" element={<GDPRPage />} /> {/* ✅ CORRIGÉ : Gdprpage → GDPRPage */}
+                <Route 
+                  path="/gdpr" 
+                  element={<ProtectedRoute><GDPRPage /></ProtectedRoute>} 
+                /> {/* ✅ CORRIGÉ : Gdprpage → GDPRPage */}           
                 <Route path="/legal" element={<LegalNotice />} />
 
                 {/* À propos */}
@@ -102,6 +109,7 @@ function App() {
               </Routes>
             </main>
             <Footer />
+            <CookieConsentBanner />
           </div>
         </ToastProvider>
       </AuthProvider>
