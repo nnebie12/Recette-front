@@ -40,14 +40,14 @@ const AdminDashboard = () => {
     stats: false
   });
 
-  const loadAllIntelligence = useCallback(async () => {
+  const loadAllIntelligence = useCallback(async (isCancelled = () => false) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      // Charger les statistiques globales (rapide)
       setLoadingProgress(prev => ({ ...prev, stats: true }));
       const dashboardStats = await adminService.getDashboardStats();
+      if (isCancelled()) return;
       setAnalyticsData({
         totalUsers: dashboardStats.totalUsers,
         activeRecipes: dashboardStats.activeRecipes,
@@ -60,63 +60,72 @@ const AdminDashboard = () => {
       // Charger les utilisateurs de base (moyen)
       setLoadingProgress(prev => ({ ...prev, users: true }));
       const basicUsers = await adminService.getAllUsers();
+      if (isCancelled()) return;
       setUsers(basicUsers);
       setLoadingProgress(prev => ({ ...prev, users: false }));
 
-      // Enrichir avec les comportements (lent, en arrière-plan)
+      // Enrichir avec les comportements 
       setLoadingProgress(prev => ({ ...prev, behaviors: true }));
-      const enriched = await enrichUsersWithBehavior(basicUsers);
-      setEnrichedUsers(enriched);
-      setLoadingProgress(prev => ({ ...prev, behaviors: false }));
+      try {
+        await enrichUsersWithBehavior(basicUsers, setEnrichedUsers);
+      } finally {
+        if (!isCancelled()) {
+          setLoadingProgress(prev => ({ ...prev, behaviors: false }));
+        }
+      }
 
     } catch (err) {
-      console.error('Erreur lors du chargement:', err);
-      setError(`Erreur serveur: ${err.message}`);
+      if (!isCancelled()) {
+        console.error('Erreur lors du chargement:', err);
+        setError(`Erreur serveur: ${err.message}`);
+      }
     } finally {
-      setLoading(false);
+      if (!isCancelled()) {
+        setLoading(false);
+      }
     }
   }, []);
 
   // Enrichissement optimisé des utilisateurs avec comportement
-  const enrichUsersWithBehavior = async (baseUsers) => {
-    const batchSize = 5;
-    const enriched = [];
+  const enrichUsersWithBehavior = async (baseUsers, onBatchDone) => {
+  const batchSize = 5;
+  const enriched = [];
 
-    for (let i = 0; i < baseUsers.length; i += batchSize) {
-      const batch = baseUsers.slice(i, i + batchSize);
+  for (let i = 0; i < baseUsers.length; i += batchSize) {
+    const batch = baseUsers.slice(i, i + batchSize);
 
-      const batchPromises = batch.map(async (user) => {
-        try {
-          const behaviorData = await userBehaviorService.getAdvancedAnalysis(user.id);
-          const nlpData = await adminService.getUserNlpInsight(user.id);
+    const batchPromises = batch.map(async (user) => {
+      try {
+        const behaviorData = await userBehaviorService.getAdvancedAnalysis(user.id);
+        const nlpData = await adminService.getUserNlpInsight(user.id);
 
-          return {
-            ...user,
-            ai: behaviorData,
-            nlp: nlpData
-          };
-        } catch (err) {
-          return {
-            ...user,
-            ai: {
-              metriques: {
-                scoreEngagement: 0,
-                risqueChurn: 0,
-                profilUtilisateur: 'NOUVEAU'
-              }
-            },
-            nlp: err.message ? { error: err.message } : null
-          };
-        }
-      });
+        return {
+          ...user,
+          ai: behaviorData,
+          nlp: nlpData
+        };
+      } catch (err) {
+        return {
+          ...user,
+          ai: {
+            metriques: {
+              scoreEngagement: 0,
+              risqueChurn: 0,
+              profilUtilisateur: 'NOUVEAU'
+            }
+          },
+          nlp: err.message ? { error: err.message } : null
+        };
+      }
+    });
 
+    const batchResults = await Promise.all(batchPromises);
+    enriched.push(...batchResults);
+    onBatchDone?.([...enriched]); 
+  }
 
-      const batchResults = await Promise.all(batchPromises);
-      enriched.push(...batchResults);
-    }
-
-    return enriched;
-  };
+  return enriched;
+};
 
   // Rechargement rapide (utilisateurs uniquement)
   const quickReload = useCallback(async () => {
@@ -134,7 +143,7 @@ const AdminDashboard = () => {
     }
   }, []);
 
-  // Sécurité et initialisation
+  
   useEffect(() => {
     if (authLoading) return;
 
@@ -144,13 +153,18 @@ const AdminDashboard = () => {
     }
 
     const isAdmin = isAdminRole(currentUser?.role);
-       
+
     if (!isAdmin) {
       navigate('/');
       return;
     }
 
-    loadAllIntelligence();
+    let cancelled = false;
+    loadAllIntelligence(() => cancelled);
+
+    return () => {
+      cancelled = true;
+    };
   }, [currentUser, authLoading, navigate, loadAllIntelligence]);
 
   // Logique de tri optimisée
@@ -249,7 +263,7 @@ const AdminDashboard = () => {
           </button>
 
           <button 
-            onClick={loadAllIntelligence}
+            onClick={() => loadAllIntelligence()}
             className="p-3 bg-orange-500 text-white rounded-2xl shadow-sm hover:bg-orange-600 transition-all"
           >
             <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
@@ -343,9 +357,9 @@ const AdminDashboard = () => {
                   </thead>
                   <tbody>
                     {sortedUsers.map((user) => {
-                      const engagement = user.ai?.metriques?.scoreEngagement || 0;
-                      const churn = user.ai?.metriques?.risqueChurn || 0;
-                      const profil = user.ai?.metriques?.profilUtilisateur || 'NOUVEAU';
+                      const engagement = (user.ai?.comportementBase?.metriques?.scoreEngagement || 0) * 10; 
+                      const churn = user.ai?.analyticsAvances?.risqueChurn?.score || 0;
+                      const profil = user.ai?.analyticsAvances?.scoreRFM?.segment || 'NOUVEAU';
                       
                       return (
                         <tr key={user.id} className="border-b border-slate-50 hover:bg-slate-50/80">

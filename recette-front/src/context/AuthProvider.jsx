@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AuthContext } from './AuthContext';
 import { authService } from '../services/authService';
 import { userService } from '../services/userService';
@@ -77,7 +77,8 @@ export const AuthProvider = ({ children }) => {
     }
   }, [currentUser]);
 
-  const value = {
+  
+  const value = useMemo(() => ({
     currentUser,
     loading,
     error,
@@ -86,7 +87,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateUser,
     isAuthenticated: !!currentUser,
-  };
+  }), [currentUser, loading, error, login, register, logout, updateUser]);
 
   return (
     <AuthContext.Provider value={value}>

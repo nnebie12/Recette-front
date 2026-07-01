@@ -1,16 +1,17 @@
 import React from 'react';
-import { Target, TrendingUp, AlertTriangle, UserPlus } from 'lucide-react';
+import { UserPlus, Star, Award, Zap, AlertTriangle } from 'lucide-react';
 
 const RFMVisualizer = ({ stats }) => {
   const cards = [
-    { label: 'Champions', val: stats.champions, color: 'text-green-600', bg: 'bg-green-50', icon: Target },
-    { label: 'Fidèles', val: stats.fidele, color: 'text-blue-600', bg: 'bg-blue-50', icon: TrendingUp },
-    { label: 'À Risque', val: stats.risque, color: 'text-red-600', bg: 'bg-red-50', icon: AlertTriangle },
-    { label: 'Nouveaux', val: stats.nouveau, color: 'text-orange-600', bg: 'bg-orange-50', icon: UserPlus },
+    { label: 'Nouveaux', val: stats?.nouveau || 0, color: 'text-orange-600', bg: 'bg-orange-50', icon: UserPlus },
+    { label: 'Débutants', val: stats?.debutant || 0, color: 'text-yellow-600', bg: 'bg-yellow-50', icon: Zap },
+    { label: 'Occasionnels', val: stats?.occasionnel || 0, color: 'text-blue-600', bg: 'bg-blue-50', icon: AlertTriangle },
+    { label: 'Actifs', val: stats?.actif || 0, color: 'text-indigo-600', bg: 'bg-indigo-50', icon: Award },
+    { label: 'Fidèles', val: stats?.fidele || 0, color: 'text-green-600', bg: 'bg-green-50', icon: Star },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-8">
       {cards.map((card, i) => (
         <div key={i} className={`${card.bg} p-4 rounded-2xl border border-white shadow-sm transition-transform hover:scale-105`}>
           <div className="flex justify-between items-start">
