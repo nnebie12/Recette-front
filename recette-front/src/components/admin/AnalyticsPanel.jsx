@@ -7,8 +7,9 @@ const PROFIL_OPTIONS = [
   'TOUS', 
   'ACTIF', 
   'FIDÈLE', 
-  'EXPLORATEUR', 
-  'OCCASIONNEL'
+  'NOUVEAU', 
+  'OCCASIONNEL',
+  'FIDELE'
 ];
 
 const RECOMMENDATION_TYPES = {

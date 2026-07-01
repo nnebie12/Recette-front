@@ -88,7 +88,8 @@ const AdminDashboard = () => {
 
   // Enrichissement optimisé des utilisateurs avec comportement
   const enrichUsersWithBehavior = async (baseUsers, onBatchDone) => {
-  const batchSize = 5;
+  // On passe de 5 à 40 requêtes simultanées pour accélérer drastiquement le flux
+  const batchSize = 40; 
   const enriched = [];
 
   for (let i = 0; i < baseUsers.length; i += batchSize) {
@@ -96,8 +97,11 @@ const AdminDashboard = () => {
 
     const batchPromises = batch.map(async (user) => {
       try {
-        const behaviorData = await userBehaviorService.getAdvancedAnalysis(user.id);
-        const nlpData = await adminService.getUserNlpInsight(user.id);
+        // Lancement en parallèle des deux promesses pour un MÊME utilisateur
+        const [behaviorData, nlpData] = await Promise.all([
+          userBehaviorService.getAdvancedAnalysis(user.id),
+          adminService.getUserNlpInsight(user.id)
+        ]);
 
         return {
           ...user,
@@ -108,11 +112,7 @@ const AdminDashboard = () => {
         return {
           ...user,
           ai: {
-            metriques: {
-              scoreEngagement: 0,
-              risqueChurn: 0,
-              profilUtilisateur: 'NOUVEAU'
-            }
+            metriques: { scoreEngagement: 0, risqueChurn: 0, profilUtilisateur: 'NOUVEAU' }
           },
           nlp: err.message ? { error: err.message } : null
         };
