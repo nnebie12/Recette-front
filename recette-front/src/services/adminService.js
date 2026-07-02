@@ -108,7 +108,7 @@ export const adminService = {
         activeRecipes: usersData.reduce((acc, u) => acc + (u.recettesCount || 0), 0),
         totalComments: contenuStats.data?.totalCommentaires ?? 0,
         avgRating: contenuStats.data?.noteMoyenneGlobale ?? 0,
-        rfm: rfmStats.data || { champions: 0, fidele: 0, risque: 0, nouveau: 0 },
+        rfm: rfmStats.data || { nouveau: 0, debutant: 0, occasionnel: 0, actif: 0, fidele: 0 },
         engagedCount: engagedUsers.data?.length || 0
       };
     } catch (error) {
@@ -217,7 +217,7 @@ export const adminService = {
       return response.data;
     } catch (error) {
       console.warn('Stats RFM non disponibles, retour de valeurs par défaut', error.message);
-      return { champions: 0, fidele: 0, risque: 0, nouveau: 0 };
+      return { nouveau: 0, debutant: 0, occasionnel: 0, actif: 0, fidele: 0 };
     }
   },
 
