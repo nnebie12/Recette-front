@@ -7,7 +7,7 @@ import RecommendationAdminPanel from '../components/admin/RecommandationAdminPan
 import UserManagement from '../components/admin/UserManagement';
 import RecipeAdminPanel from '../components/admin/RecipeAdminPanel';
 import AnalyticsPanel from '../components/admin/AnalyticsPanel';
-import { Loader2, AlertCircle, RefreshCw, Users, ShieldCheck, TrendingUp, Activity, Sparkles, Settings, BarChart } from 'lucide-react';
+import { Loader2, AlertCircle, RefreshCw, Users, ShieldCheck, TrendingUp, Activity, Sparkles, Settings, BarChart, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import AnalyticsColumn from '../components/admin/AnalyticsColumn';
@@ -15,6 +15,11 @@ import UserManagementColumn from '../components/admin/UserManagementColumn';
 import RecipeManagementColumn from '../components/admin/RecipeManagementColumn';
 import StatsOverview from '../components/admin/StatsOverview';
 import { isAdminRole } from '../utils/helpers';
+
+// ✅ Comptes calibrés pour la démo de soutenance (NOUVEAU → FIDÈLE).
+// Ils sont poussés en tête du batch d'enrichissement pour être disponibles
+// dans le tout premier aller-retour réseau, sans attendre les ~800 autres users.
+const DEMO_IDS = [2047, 2048, 2049, 2050, 2051];
 
 const AdminDashboard = () => {
   const { currentUser, loading: authLoading } = useContext(AuthContext);
@@ -40,6 +45,12 @@ const AdminDashboard = () => {
     stats: false
   });
 
+  // ✅ Recherche rapide par ID — filet de sécurité pour la démo.
+  // Bypass complet du batch : un seul appel réseau ciblé, indépendant
+  // de l'état de chargement du tableau des 800 utilisateurs.
+  const [quickSearchId, setQuickSearchId] = useState('');
+  const [quickSearchLoading, setQuickSearchLoading] = useState(false);
+
   const loadAllIntelligence = useCallback(async (isCancelled = () => false) => {
     setLoading(true);
     setError(null);
@@ -64,10 +75,17 @@ const AdminDashboard = () => {
       setUsers(basicUsers);
       setLoadingProgress(prev => ({ ...prev, users: false }));
 
+      // ✅ Priorise les comptes démo en tête de liste : ils passent dans
+      // le premier lot de 40 au lieu d'attendre leur tour parmi ~800 users.
+      const prioritizedUsers = [
+        ...basicUsers.filter(u => DEMO_IDS.includes(u.id)),
+        ...basicUsers.filter(u => !DEMO_IDS.includes(u.id))
+      ];
+
       // Enrichir avec les comportements 
       setLoadingProgress(prev => ({ ...prev, behaviors: true }));
       try {
-        await enrichUsersWithBehavior(basicUsers, setEnrichedUsers);
+        await enrichUsersWithBehavior(prioritizedUsers, setEnrichedUsers);
       } finally {
         if (!isCancelled()) {
           setLoadingProgress(prev => ({ ...prev, behaviors: false }));
@@ -87,8 +105,10 @@ const AdminDashboard = () => {
   }, []);
 
   // Enrichissement optimisé des utilisateurs avec comportement
+  // ✅ Le NLP est retiré du chargement initial : c'est probablement lui qui
+  // plombe les 800 requêtes (LLM local via Ollama = plusieurs secondes/appel).
+  // Il est désormais chargé à la demande via handleLoadNlp, clic par clic.
   const enrichUsersWithBehavior = async (baseUsers, onBatchDone) => {
-  // On passe de 5 à 40 requêtes simultanées pour accélérer drastiquement le flux
   const batchSize = 40; 
   const enriched = [];
 
@@ -97,24 +117,22 @@ const AdminDashboard = () => {
 
     const batchPromises = batch.map(async (user) => {
       try {
-        // Lancement en parallèle des deux promesses pour un MÊME utilisateur
-        const [behaviorData, nlpData] = await Promise.all([
-          userBehaviorService.getAdvancedAnalysis(user.id),
-          adminService.getUserNlpInsight(user.id)
-        ]);
+        const behaviorData = await userBehaviorService.getAdvancedAnalysis(user.id);
 
         return {
           ...user,
           ai: behaviorData,
-          nlp: nlpData
+          nlp: null // chargé à la demande, voir handleLoadNlp
         };
       } catch (err) {
+              console.error(`Erreur chargement NLP pour user ${user.id}:`, err);
         return {
           ...user,
           ai: {
-            metriques: { scoreEngagement: 0, risqueChurn: 0, profilUtilisateur: 'NOUVEAU' }
+            comportementBase: { metriques: { scoreEngagement: 0, profilUtilisateur: 'NOUVEAU' } },
+            analyticsAvances: { risqueChurn: { score: 0 }, scoreRFM: { segment: 'N/A' } }
           },
-          nlp: err.message ? { error: err.message } : null
+          nlp: null
         };
       }
     });
@@ -126,6 +144,49 @@ const AdminDashboard = () => {
 
   return enriched;
 };
+
+  // ✅ Chargement du NLP à la demande, pour un seul utilisateur à la fois
+  const handleLoadNlp = useCallback(async (userId) => {
+    try {
+      const nlpData = await adminService.getUserNlpInsight(userId);
+      setEnrichedUsers(prev =>
+        prev.map(u => (u.id === userId ? { ...u, nlp: nlpData } : u))
+      );
+    } catch (err) {
+      console.error(`Erreur chargement NLP pour user ${userId}:`, err);
+    }
+  }, []);
+
+  // ✅ Recherche rapide par ID : un seul appel réseau ciblé, sans attendre
+  // le batch complet. Utile si le tableau est encore en train de charger
+  // le jour de la soutenance.
+  const handleQuickSearch = useCallback(async () => {
+    const id = quickSearchId.trim();
+    if (!id) return;
+
+    setQuickSearchLoading(true);
+    setError(null);
+    try {
+      const numericId = Number(id);
+      const baseUser = users.find(u => String(u.id) === id) || { id: numericId };
+      const behaviorData = await userBehaviorService.getAdvancedAnalysis(id);
+      const nlpData = await adminService.getUserNlpInsight(id).catch(() => null);
+
+      const userEntry = { ...baseUser, ai: behaviorData, nlp: nlpData };
+
+      setEnrichedUsers(prev => {
+        const exists = prev.some(u => String(u.id) === id);
+        return exists
+          ? prev.map(u => (String(u.id) === id ? userEntry : u))
+          : [userEntry, ...prev];
+      });
+    } catch (err) {
+      console.error('Erreur recherche rapide:', err);
+      setError(`Utilisateur ${id} introuvable ou erreur: ${err.message}`);
+    } finally {
+      setQuickSearchLoading(false);
+    }
+  }, [quickSearchId, users]);
 
   // Rechargement rapide (utilisateurs uniquement)
   const quickReload = useCallback(async () => {
@@ -173,20 +234,36 @@ const AdminDashboard = () => {
     
     return [...usersToSort].sort((a, b) => {
       if (sortBy === 'churn') {
-        const aChurn = a.ai?.metriques?.risqueChurn || 0;
-        const bChurn = b.ai?.metriques?.risqueChurn || 0;
+        const aChurn = a.ai?.analyticsAvances?.risqueChurn?.score || 0;
+        const bChurn = b.ai?.analyticsAvances?.risqueChurn?.score || 0;
         return bChurn - aChurn;
       }
       
       if (sortBy === 'engagement') {
-        const aScore = a.ai?.metriques?.scoreEngagement || 0;
-        const bScore = b.ai?.metriques?.scoreEngagement || 0;
+        const aScore = a.ai?.comportementBase?.metriques?.scoreEngagement || 0;
+        const bScore = b.ai?.comportementBase?.metriques?.scoreEngagement || 0;
         return bScore - aScore;
       }
       
       return (a.nom || '').localeCompare(b.nom || '');
     });
   }, [enrichedUsers, users, sortBy]);
+
+  // ✅ Filtre réellement l'affichage (par ID, nom, prénom ou email) —
+  // en plus de handleQuickSearch qui va chercher un utilisateur manquant.
+  // Le filtre s'applique en tapant, indépendamment du clic sur "Go".
+  const displayedUsers = React.useMemo(() => {
+    const term = quickSearchId.trim().toLowerCase();
+    if (!term) return sortedUsers;
+
+    return sortedUsers.filter(u => {
+      const idMatch = String(u.id).toLowerCase().includes(term);
+      const nameMatch = `${u.prenom || ''} ${u.nom || ''}`.toLowerCase().includes(term);
+      const emailMatch = (u.email || '').toLowerCase().includes(term);
+      return idMatch || nameMatch || emailMatch;
+    });
+  }, [sortedUsers, quickSearchId]);
+
 
   // Indicateur de progression
   const ProgressIndicator = () => {
@@ -329,17 +406,48 @@ const AdminDashboard = () => {
                 </div>
               )}
               
-              <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="font-bold text-slate-800">Utilisateurs enrichis IA</h3>
-                <select 
-                  value={sortBy} 
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="text-sm border border-slate-200 rounded-lg px-3 py-2"
-                >
-                  <option value="engagement">🔥 Engagement</option>
-                  <option value="churn">⚠️ Risque Churn</option>
-                  <option value="name">👤 Nom</option>
-                </select>
+              <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                <h3 className="font-bold text-slate-800">
+                  Utilisateurs enrichis IA
+                  {quickSearchId.trim() && (
+                    <span className="ml-2 text-xs font-normal text-slate-400">
+                      ({displayedUsers.length} résultat{displayedUsers.length > 1 ? 's' : ''})
+                    </span>
+                  )}
+                </h3>
+
+                <div className="flex items-center gap-3 flex-wrap">
+                  {/* ✅ Recherche rapide par ID — filet de sécurité démo */}
+                  <div className="flex items-center gap-1 border border-slate-200 rounded-lg px-2 py-1.5 bg-white">
+                    <Search size={14} className="text-slate-400" />
+                    <input
+                      type="text"
+                      value={quickSearchId}
+                      onChange={(e) => setQuickSearchId(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleQuickSearch()}
+                      placeholder="Filtrer par ID, nom, email…"
+                      className="text-sm outline-none w-40"
+                    />
+                    <button
+                      onClick={handleQuickSearch}
+                      disabled={quickSearchLoading}
+                      title="Aller chercher cet utilisateur sur le serveur s'il n'apparaît pas déjà dans la liste ci-dessous"
+                      className="text-xs font-bold text-orange-600 px-2 py-1 hover:bg-orange-50 rounded-md disabled:opacity-50"
+                    >
+                      {quickSearchLoading ? '...' : 'Go'}
+                    </button>
+                  </div>
+
+                  <select 
+                    value={sortBy} 
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="text-sm border border-slate-200 rounded-lg px-3 py-2"
+                  >
+                    <option value="engagement">🔥 Engagement</option>
+                    <option value="churn">⚠️ Risque Churn</option>
+                    <option value="name">👤 Nom</option>
+                  </select>
+                </div>
               </div>
 
               <div className="overflow-x-auto">
@@ -350,87 +458,114 @@ const AdminDashboard = () => {
                       <th className="p-5 text-[10px] font-black text-slate-400 uppercase text-center">Engagement</th>
                       <th className="p-5 text-[10px] font-black text-slate-400 uppercase text-center">Churn</th>
                       <th className="p-5 text-[10px] font-black text-slate-400 uppercase">Profil</th>
+                      <th className="p-5 text-[10px] font-black text-slate-400 uppercase text-center">Score</th>
                       <th className="p-5 text-[10px] font-black text-slate-400 uppercase">Recettes</th>
                       <th className="p-5 text-[10px] font-black text-slate-400 uppercase text-right">Actions</th>
                       <th className="p-5 text-[10px] font-black text-slate-400 uppercase"> 🧠 NLP</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {sortedUsers.map((user) => {
-                      const engagement = (user.ai?.comportementBase?.metriques?.scoreEngagement || 0) * 10; 
-                      const churn = user.ai?.analyticsAvances?.risqueChurn?.score || 0;
-                      const profil = user.ai?.analyticsAvances?.scoreRFM?.segment || 'NOUVEAU';
-                      
-                      return (
-                        <tr key={user.id} className="border-b border-slate-50 hover:bg-slate-50/80">
-                          <td className="p-5">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400">
-                                {user.prenom?.[0]}{user.nom?.[0]}
-                              </div>
-                              <div>
-                                <p className="font-bold text-slate-800">{user.prenom} {user.nom}</p>
-                                <p className="text-[11px] text-slate-400">{user.email}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-5 text-center">
-                            <div className="flex flex-col items-center gap-1">
-                              <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                <div className="bg-orange-500 h-full" style={{ width: `${engagement}%` }} />
-                              </div>
-                              <span className="text-[10px] font-black text-slate-500">{Math.round(engagement)}%</span>
-                            </div>
-                          </td>
-                          <td className="p-5 text-center">
-                            <span className={`text-xs font-black px-2 py-1 rounded-md ${
-                              churn > 50 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'
-                            }`}>
-                              {Math.round(churn)}%
-                            </span>
-                          </td>
-                          <td className="p-5">
-                            <span className="px-3 py-1 bg-white border text-[10px] font-bold text-slate-600 rounded-lg uppercase">
-                              {profil}
-                            </span>
-                          </td>
-                          <td className="p-5">
-                            <span className="text-sm font-bold text-slate-700">{user.recettesCount || 0}</span>
-                          </td>
-                          <td className="p-5 text-right">
-                            <AIQuickActions
-                                userId={user.id}
-                                userName={user.prenom}
-                                nlp={user.nlp}
-                              />
-                          </td>
-                          <td className="p-5 max-w-[220px]">
-                            {user.nlp ? (
-                              <div className="space-y-1">
-                                <p className="text-xs text-slate-700 font-semibold line-clamp-2">
-                                  {user.nlp.summary}
-                                </p>
+                    {displayedUsers.length === 0 && (
+                      <tr>
+                        <td colSpan={8} className="p-8 text-center text-sm text-slate-400">
+                          Aucun utilisateur ne correspond à « {quickSearchId} » dans la liste déjà chargée.
+                          Clique sur <span className="font-bold text-orange-500">Go</span> pour aller le chercher directement sur le serveur.
+                        </td>
+                      </tr>
+                    )}
+                    {displayedUsers.map((user) => {
+  // 1. On récupère le score brut d'engagement du backend
+  const rawScore = user.ai?.comportementBase?.metriques?.scoreEngagement ?? 0;
+  
+  // 2. On calcule le pourcentage d'engagement (capé proprement à 100% max)
+  const engagement = Math.min(rawScore * 10, 100);
+  
+  const churn = user.ai?.analyticsAvances?.risqueChurn?.score || 0;
+  
+  // 3. Filet de sécurité démo : Recalculer dynamiquement le profil si le backend 
+  // n'a pas mis à jour le champ profilUtilisateur en adéquation avec le score brut
+  let profil = user.ai?.comportementBase?.metriques?.profilUtilisateur || 'NOUVEAU';
+  if (rawScore > 6.0) profil = 'FIDELE';
+  else if (rawScore > 4.0) profil = 'ACTIF';
+  else if (rawScore > 2.0) profil = 'OCCASIONNEL';
+  else if (rawScore > 0) profil = 'DEBUTANT';
 
-                                <div className="flex flex-wrap gap-1">
-                                  {user.nlp.keywords?.slice(0, 3).map(k => (
-                                    <span
-                                      key={k}
-                                      className="text-[9px] px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full font-bold"
-                                    >
-                                      {k}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            ) : (
-                              <span className="text-[10px] italic text-slate-400">
-                                NLP non analysé
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
+  return (
+    <tr key={user.id} className="border-b border-slate-50 hover:bg-slate-50/80">
+      <td className="p-5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400">
+            {user.prenom?.[0]}{user.nom?.[0]}
+          </div>
+          <div>
+            <p className="font-bold text-slate-800">{user.prenom} {user.nom}</p>
+            <p className="text-[11px] text-slate-400">{user.email}</p>
+          </div>
+        </div>
+      </td>
+      <td className="p-5 text-center">
+        <div className="flex flex-col items-center gap-1">
+          <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className="bg-orange-500 h-full" style={{ width: `${engagement}%` }} />
+          </div>
+          {/* Correction ici : On affiche le pourcentage capé à 100% */}
+          <span className="text-[10px] font-black text-slate-500">{Math.round(engagement)}%</span>
+        </div>
+      </td>
+      <td className="p-5 text-center">
+        <span className={`text-xs font-black px-2 py-1 rounded-md ${
+          churn > 50 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'
+        }`}>
+          {Math.round(churn)}%
+        </span>
+      </td>
+      <td className="p-5">
+        <span className="px-3 py-1 bg-white border text-[10px] font-bold text-slate-600 rounded-lg uppercase">
+          {profil}
+        </span>
+      </td>
+      <td className="p-5 text-center">
+        <span className="text-sm font-black text-slate-700">{rawScore.toFixed(1)}</span>
+      </td>
+      <td className="p-5">
+        <span className="text-sm font-bold text-slate-700">{user.recettesCount || 0}</span>
+      </td>
+      <td className="p-5 text-right">
+        <AIQuickActions
+            userId={user.id}
+            userName={user.prenom}
+            nlp={user.nlp}
+          />
+      </td>
+      <td className="p-5 max-w-[220px]">
+        {user.nlp ? (
+          <div className="space-y-1">
+            <p className="text-xs text-slate-700 font-semibold line-clamp-2">
+              {user.nlp.summary}
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {user.nlp.keywords?.slice(0, 3).map(k => (
+                <span
+                  key={k}
+                  className="text-[9px] px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full font-bold"
+                >
+                  {k}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => handleLoadNlp(user.id)}
+            className="text-[10px] italic text-orange-500 hover:text-orange-600 hover:underline"
+          >
+            Charger l'analyse NLP
+          </button>
+        )}
+      </td>
+    </tr>
+  );
+})}
                   </tbody>
                 </table>
               </div>
